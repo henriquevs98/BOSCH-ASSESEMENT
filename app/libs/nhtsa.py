@@ -8,11 +8,12 @@ def nhtsa_extract(url):
         # Send an HTTP GET request to the API endpoint and store the response
         response = requests.get(url)
         logging.debug(f'Extracted response for {url}')
+        
+        return response
 
     except Exception as e:
         logging.error(f'An error occurred when using nhtsa_extract(): {e}')
 
-        return response
 
 # Function to transform a column data returned from a get url to a list
 def nhtsa_to_list(response, column):
