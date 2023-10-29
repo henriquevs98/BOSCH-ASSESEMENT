@@ -2,7 +2,7 @@ from app.libs import nhtsa
 import logging
 
 # Configure logging
-logging.basicConfig(filename='app/files/logs/nhtsa_complaints.log', level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 # Create a StreamHandler to print log messages to the console
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
