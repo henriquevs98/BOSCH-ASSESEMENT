@@ -11,7 +11,7 @@ import os
 logging.basicConfig(level=logging.INFO)
 # Create a StreamHandler to print log messages to the console
 console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.getLogger().getEffectiveLevel())
 # Create a Formatter to format log messages
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 # Add the Formatter to the StreamHandler
@@ -24,8 +24,7 @@ logging.getLogger().addHandler(console_handler)
 def nhtsa_extract(url):
     try:
         # Send an HTTP GET request to the API endpoint and store the response
-        response = requests.get(url)
-        logging.debug(f'Extracted response for {url}')
+        response = requests.get(url, stream=False)
         
         return response
 
@@ -52,6 +51,7 @@ def nhtsa_to_list(response, column):
         if not df.empty:
             # Convert the specified column to a Python list
             list_df = df[column].tolist()
+            logging.debug(f'Extracted {column} column values to list')
         else:
             list_df = []
         
@@ -72,7 +72,7 @@ def nhtsa_to_df(response):
         logging.debug('Converted json string to dictionary')
         # Normalize the 'results' column
         df_results = pd.json_normalize(dict['results'])
-        logging.debug('Normalized results dictionary key into a df')
+        logging.debug(f'Normalized results dictionary key into a df with {df_results.shape[0]} lines')
 
         # Check if 'products' exist in df_results
         if 'products' in df_results.columns:
@@ -86,7 +86,7 @@ def nhtsa_to_df(response):
         else:
             # Handle the case where the 'products' column does not exist
             df = df_results.copy()
-            logging.debug('Create df with columns as results keys only')
+            logging.debug('Create df with columns as results dictionary keys only')
 
         return df
 
@@ -101,7 +101,8 @@ def get_years():
     response = nhtsa_extract('https://api.nhtsa.gov/products/vehicle/modelYears?issueType=c')
     # Clean info extracted to a list of years
     list_years = nhtsa_to_list(response, 'modelYear')
-    logging.info(f'Extracted years: {list_years}')
+    logging.info(f'Extracted {len(list_years)} years')
+    logging.debug(f'Extracted years: {list_years}')
 
     return list_years
 
@@ -133,14 +134,18 @@ def get_models(modelyear, make):
 # Function to extract all possible combinations of make, model, and year for a given year and appends them to a list
 def get_combinations_by_year(year, combinations):
     try:
-        logging.debug(f'Process {os.getpid()}: extracting combinations for {year}...')
+        logging.debug(f'Process {os.getpid()}: extracting combinations for {year} from NHTSA API...')
 
         for make in get_makes(year):
+            count = 0
             for model in get_models(year, make):
                 # Only append non-empty combinations
                 if make and model:
                     combinations.append((make, model, year))
-                    logging.debug(f'Process {os.getpid()}: extracted (make: {make}, model: {model}, year:{year})')     
+                    logging.debug(f'Process {os.getpid()}: extracted (make: {make}, model: {model}, year:{year})')
+                    count += 1
+
+            logging.debug(f'Process {os.getpid()}: extracted {count} combinations for {year}')
 
     except Exception as e:
         logging.error(f'Process {os.getpid()}: error occurred when using get_combinations_by_year(): {e}')
@@ -148,13 +153,13 @@ def get_combinations_by_year(year, combinations):
 
 # Get all complaints for the selected Model Year, Make, Model 
 def get_complaints(make, model, modelyear):
-        logging.debug(f'Process {os.getpid()}: extracting {make}, {model}, {modelyear} complaints...]')
+        logging.debug(f'Process {os.getpid()}: extracting {make}, {model}, {modelyear} complaints')
         # Define the URL for the NHTSA API endpoint that returns all information in complaints dataset for a specific vehicle
         response = nhtsa_extract(f'https://api.nhtsa.gov/complaints/complaintsByVehicle?make={make}&model={model}&modelYear={modelyear}')
         # Clean info extracted to a df
         df_complaints = nhtsa_to_df(response)  
 
-        logging.debug(f'Process {os.getpid()}: extracted {df_complaints.shape[0]} complaints...]')
+        logging.debug(f'Process {os.getpid()}: extracted {df_complaints.shape[0]} complaints]')
 
         return df_complaints
 
@@ -162,7 +167,7 @@ def get_complaints(make, model, modelyear):
 # Function that uses multiprocessing to extract combinations for multiple years in parallel
 def parallel_get_combinations_by_year(list_years):
     try:
-        logging.info('Extracting (make, model, year) combinations...')
+        logging.info('Extracting and creating (make, model, year) combinations based of years from NHTSA API...')
         # Get the maximum number of workers to use based on cpu count
         max_workers = multiprocessing.cpu_count()
 
@@ -178,7 +183,7 @@ def parallel_get_combinations_by_year(list_years):
             pool.join()
             # Convert the shared list to a regular list 
             combinations = list(combinations)
-            logging.info(f'Extracted {len(combinations)} combinations...')
+            logging.info(f'Extracted {len(combinations)} combinations')
 
             return combinations
    
@@ -189,7 +194,7 @@ def parallel_get_combinations_by_year(list_years):
 # Function to get complaints in a paralalized way as a df
 def parallel_get_complaints(combinations):
     try:
-        logging.info('Extracting complaints according to combinations...')
+        logging.info('Extracting complaints according to combinations from NHTSA API...')
         # Define the number of processes to use
         num_processes = multiprocessing.cpu_count()
 
@@ -229,9 +234,9 @@ def get_all_complaints():
 # Function to save a df to a csv file
 def save_to_csv(df, dir):
     try:
-        logging.info(f'Saving full result as csv file in {dir}...')
+        logging.info(f'Saving full result as csv file at {dir}...')
         df.to_csv(dir, index=False, sep=';')
-        logging.info(f'Saved full result as csv file in {dir}')
+        logging.info(f'Saved {df.shape[0]} lines on csv file at {dir}')
 
     except Exception as e:
         logging.error(f'An error occurred when using save_to_csv(): {e}')
