@@ -2,8 +2,6 @@ import pandas as pd
 import requests,json
 import logging
 import multiprocessing
-import numpy as np
-import itertools
 import os
 
 
@@ -96,7 +94,7 @@ def nhtsa_to_df(response):
 
 # Function to get all Model Years as a list
 def get_years():
-    logging.info(f'Extracting years from NHTSA API...')
+    logging.info(f'Extracting years using NHTSA API...')
     # Define the URL for the NHTSA API endpoint that returns a list of model years with complaints information
     response = nhtsa_extract('https://api.nhtsa.gov/products/vehicle/modelYears?issueType=c')
     # Clean info extracted to a list of years
@@ -109,7 +107,7 @@ def get_years():
 
 # Function to get all Makes (car brands) for a Model Year as a list
 def get_makes(modelyear):
-    logging.debug(f'Extracting makes that have complaints for {modelyear} from NHTSA API...')
+    logging.debug(f'Extracting makes that have complaints for {modelyear} using NHTSA API...')
     # Define the URL for the NHTSA API endpoint that returns a list of makes for each year with complaints information
     response = nhtsa_extract(f'https://api.nhtsa.gov/products/vehicle/makes?modelYear={modelyear}&issueType=r')
     # Clean info extracted to a list of makes
@@ -121,7 +119,7 @@ def get_makes(modelyear):
 
 # Get all Models for the Make and Model Year
 def get_models(modelyear, make):
-    logging.debug(f'Extracting models that have complaints for {modelyear} and {make} from NHTSA API...')
+    logging.debug(f'Extracting models that have complaints for {modelyear} and {make} using NHTSA API...')
     # Define the URL for the NHTSA API endpoint that returns a list of models for each year and make with complaints information
     response = nhtsa_extract(f'https://api.nhtsa.gov/products/vehicle/models?modelYear={modelyear}&make={make}&issueType=c')
     # Clean info extracted to a list of models
@@ -134,7 +132,7 @@ def get_models(modelyear, make):
 # Function to extract all possible combinations of make, model, and year for a given year and appends them to a list
 def get_combinations_by_year(year, combinations):
     try:
-        logging.debug(f'Process {os.getpid()}: extracting combinations for {year} from NHTSA API...')
+        logging.debug(f'Process {os.getpid()}: extracting combinations for {year} using NHTSA API...')
 
         for make in get_makes(year):
             count = 0
@@ -167,7 +165,7 @@ def get_complaints(make, model, modelyear):
 # Function that uses multiprocessing to extract combinations for multiple years in parallel
 def parallel_get_combinations_by_year(list_years):
     try:
-        logging.info('Extracting and creating (make, model, year) combinations based of years from NHTSA API...')
+        logging.info('Extracting and creating (make, model, year) combinations based of years using NHTSA API...')
         # Get the maximum number of workers to use based on cpu count
         max_workers = multiprocessing.cpu_count()
 
@@ -229,14 +227,3 @@ def get_all_complaints():
 
     except Exception as e:
         logging.error(f'An error occurred when using get_all_complaints(): {e}')
-
-
-# Function to save a df to a csv file
-def save_to_csv(df, dir):
-    try:
-        logging.info(f'Saving full result as csv file at {dir}...')
-        df.to_csv(dir, index=False, sep=';')
-        logging.info(f'Saved {df.shape[0]} lines on csv file at {dir}')
-
-    except Exception as e:
-        logging.error(f'An error occurred when using save_to_csv(): {e}')
