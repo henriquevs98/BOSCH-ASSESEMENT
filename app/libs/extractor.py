@@ -15,4 +15,4 @@ def extract_response(url):
         return response
 
     except Exception as e:
-        logging.error(f'Process {os.getpid()}: An error occurred when using nhtsa_extract(): {e}')
+        logging.error(f'Process {os.getpid()}: An error occurred when using extract_response(): {e}')
