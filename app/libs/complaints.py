@@ -3,20 +3,10 @@ import requests,json
 import logging
 import multiprocessing
 import os
+from app.logger import logger
 
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-# Create a StreamHandler to print log messages to the console
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.getLogger().getEffectiveLevel())
-# Create a Formatter to format log messages
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-# Add the Formatter to the StreamHandler
-console_handler.setFormatter(formatter)
-# Add the StreamHandler to the logger
-logging.getLogger().handlers.pop()
-logging.getLogger().addHandler(console_handler)
+# Load logging settings
+logger()
 
 
 def nhtsa_extract(url):
@@ -27,7 +17,7 @@ def nhtsa_extract(url):
         return response
 
     except Exception as e:
-        logging.error(f'An error occurred when using nhtsa_extract(): {e}')
+        logging.error(f'Process {os.getpid()}: An error occurred when using nhtsa_extract(): {e}')
 
 
 # Function to transform a column data returned from a get url to a list
@@ -35,28 +25,25 @@ def nhtsa_to_list(response, column):
     try:
         # Convert the byte string to a regular string
         json_str = response.content.decode('utf-8')
-        logging.debug('Converted response json byte string to a regular string')
         # Convert the JSON string to a Python dictionary
         dict = json.loads(json_str)
-        logging.debug('Converted json string to dictionary')
         # Extract the 'results' data from the dictionary
         results = dict['results']
-        logging.debug('Extracted results key info from dictionary')
         # Create a Pandas DataFrame from the 'results' data
         df = pd.DataFrame(results)
-        logging.debug('Information read as DataFrame')
+        logging.debug(f'Process {os.getpid()}: information read as DataFrame')
 
         if not df.empty:
             # Convert the specified column to a Python list
             list_df = df[column].tolist()
-            logging.debug(f'Extracted {column} column values to list')
+            logging.debug(f'Process {os.getpid()}: extracted {column} column values to list')
         else:
             list_df = []
         
         return list_df
     
     except Exception as e:
-        logging.error(f'An error occurred when using nhtsa_to_list(): {e}')
+        logging.error(f'Process {os.getpid()}: Error occurred using nhtsa_to_list(): {e}')
 
 
 # Function to transform all complaints data to a df
@@ -64,10 +51,8 @@ def nhtsa_to_df(response):
     try:
         # Convert the byte string to a regular string
         json_str = response.content.decode('utf-8')
-        logging.debug('Converted response json byte string to a regular string')
         # Convert the JSON string to a Python dictionary
         dict = json.loads(json_str)
-        logging.debug('Converted json string to dictionary')
         # Normalize the 'results' column
         df_results = pd.json_normalize(dict['results'])
         logging.debug(f'Normalized results dictionary key into a df with {df_results.shape[0]} lines')
@@ -80,16 +65,16 @@ def nhtsa_to_df(response):
             df = df_results.join(df_products, rsuffix='_product')
             # Drop the 'products' column
             df = df.drop('products', axis=1)
-            logging.debug('Normalized subdictionary keys of products into a df')
+            logging.debug(f'Process {os.getpid()}: Normalized subdictionary keys of products into a df and joined with results')
         else:
             # Handle the case where the 'products' column does not exist
             df = df_results.copy()
-            logging.debug('Create df with columns as results dictionary keys only')
+            logging.debug(f'Process {os.getpid()}: Created df with columns as results dictionary keys only')
 
         return df
 
     except Exception as e:
-        logging.error(f'An error occurred when using nhtsa_to_df(): {e}')
+        logging.error(f'Process {os.getpid()}: error occurred using nhtsa_to_df(): {e}')
 
 
 # Function to get all Model Years as a list
@@ -107,24 +92,24 @@ def get_years():
 
 # Function to get all Makes (car brands) for a Model Year as a list
 def get_makes(modelyear):
-    logging.debug(f'Extracting makes that have complaints for {modelyear} using NHTSA API...')
+    logging.debug(f'Process {os.getpid()}: extracting makes that have complaints for {modelyear} using NHTSA API...')
     # Define the URL for the NHTSA API endpoint that returns a list of makes for each year with complaints information
     response = nhtsa_extract(f'https://api.nhtsa.gov/products/vehicle/makes?modelYear={modelyear}&issueType=r')
     # Clean info extracted to a list of makes
     list_makes = nhtsa_to_list(response, 'make')
-    logging.debug(f'Extracted {len(list_makes)} makes')
+    logging.debug(f'Process {os.getpid()}: extracted {len(list_makes)} makes')
 
     return list_makes
 
 
 # Get all Models for the Make and Model Year
 def get_models(modelyear, make):
-    logging.debug(f'Extracting models that have complaints for {modelyear} and {make} using NHTSA API...')
+    logging.debug(f'Process {os.getpid()}: extracting models that have complaints for {modelyear} and {make} using NHTSA API...')
     # Define the URL for the NHTSA API endpoint that returns a list of models for each year and make with complaints information
     response = nhtsa_extract(f'https://api.nhtsa.gov/products/vehicle/models?modelYear={modelyear}&make={make}&issueType=c')
     # Clean info extracted to a list of models
     list_models = nhtsa_to_list(response, 'model')
-    logging.debug(f'Extracted {len(list_models)} makes')
+    logging.debug(f'Process {os.getpid()}: extracted {len(list_models)} makes')
 
     return list_models
 
@@ -146,7 +131,7 @@ def get_combinations_by_year(year, combinations):
             logging.debug(f'Process {os.getpid()}: extracted {count} combinations for {year}')
 
     except Exception as e:
-        logging.error(f'Process {os.getpid()}: error occurred when using get_combinations_by_year(): {e}')
+        logging.error(f'Process {os.getpid()}: error occurred using get_combinations_by_year(): {e}')
 
 
 # Get all complaints for the selected Model Year, Make, Model 
@@ -186,7 +171,7 @@ def parallel_get_combinations_by_year(list_years):
             return combinations
    
     except Exception as e:
-        logging.error(f'An error occurred when using parallel_get_combinations_by_year(): {e}')
+        logging.error(f'Error occurred using parallel_get_combinations_by_year(): {e}')
 
 
 # Function to get complaints in a paralalized way as a df
@@ -208,7 +193,7 @@ def parallel_get_complaints(combinations):
         return df_all_complaints
 
     except Exception as e:
-        logging.error(f'An error occurred when using parallel_get_complaints(): {e}')
+        logging.error(f'Error occurred using parallel_get_complaints(): {e}')
 
 
 # Function to orchestrate parallelization and return final df with complaints
@@ -226,4 +211,4 @@ def get_all_complaints():
         return df_all_complaints
 
     except Exception as e:
-        logging.error(f'An error occurred when using get_all_complaints(): {e}')
+        logging.error(f'Error occurred using get_all_complaints(): {e}')
