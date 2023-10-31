@@ -2,7 +2,9 @@
 import os
 import json
 import logging
+import warnings
 import pandas as pd
+from io import StringIO
 
 from app import logger
 
@@ -65,3 +67,23 @@ def nhtsa_to_df(response):
 
     except Exception as e:
         logging.error(f'Process {os.getpid()}: error occurred using nhtsa_to_df(): {e}')
+
+
+# Function to transform a csv GET response to df
+def csv_response_to_df(response):
+    try:
+        # Decode bytes to string
+        content = response.content.decode('utf-8')
+        # Use StringIO to convert the string to a file-like object
+        file = StringIO(content)
+        # Ignore dtype pd non relevant warnings
+        warnings.filterwarnings('ignore')
+        # Read the file-like object as a DataFrame
+        df = pd.read_csv(file)
+        # Restore warnings
+        warnings.filterwarnings('default')
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using csv_response_to_df(): {e}')
