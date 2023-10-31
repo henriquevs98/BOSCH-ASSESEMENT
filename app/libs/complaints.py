@@ -4,20 +4,10 @@ import logging
 import multiprocessing
 import os
 from app.logger import logger
+from app.libs import extractor
 
 # Load logging settings
 logger()
-
-
-def nhtsa_extract(url):
-    try:
-        # Send an HTTP GET request to the API endpoint and store the response
-        response = requests.get(url, stream=False)
-        
-        return response
-
-    except Exception as e:
-        logging.error(f'Process {os.getpid()}: An error occurred when using nhtsa_extract(): {e}')
 
 
 # Function to transform a column data returned from a get url to a list
@@ -81,7 +71,7 @@ def nhtsa_to_df(response):
 def get_years():
     logging.info(f'Extracting years using NHTSA API...')
     # Define the URL for the NHTSA API endpoint that returns a list of model years with complaints information
-    response = nhtsa_extract('https://api.nhtsa.gov/products/vehicle/modelYears?issueType=c')
+    response = extractor.extract_response('https://api.nhtsa.gov/products/vehicle/modelYears?issueType=c')
     # Clean info extracted to a list of years
     list_years = nhtsa_to_list(response, 'modelYear')
     logging.info(f'Extracted {len(list_years)} years')
@@ -94,7 +84,7 @@ def get_years():
 def get_makes(modelyear):
     logging.debug(f'Process {os.getpid()}: extracting makes that have complaints for {modelyear} using NHTSA API...')
     # Define the URL for the NHTSA API endpoint that returns a list of makes for each year with complaints information
-    response = nhtsa_extract(f'https://api.nhtsa.gov/products/vehicle/makes?modelYear={modelyear}&issueType=r')
+    response = extractor.extract_response(f'https://api.nhtsa.gov/products/vehicle/makes?modelYear={modelyear}&issueType=r')
     # Clean info extracted to a list of makes
     list_makes = nhtsa_to_list(response, 'make')
     logging.debug(f'Process {os.getpid()}: extracted {len(list_makes)} makes')
@@ -106,7 +96,7 @@ def get_makes(modelyear):
 def get_models(modelyear, make):
     logging.debug(f'Process {os.getpid()}: extracting models that have complaints for {modelyear} and {make} using NHTSA API...')
     # Define the URL for the NHTSA API endpoint that returns a list of models for each year and make with complaints information
-    response = nhtsa_extract(f'https://api.nhtsa.gov/products/vehicle/models?modelYear={modelyear}&make={make}&issueType=c')
+    response = extractor.extract_response(f'https://api.nhtsa.gov/products/vehicle/models?modelYear={modelyear}&make={make}&issueType=c')
     # Clean info extracted to a list of models
     list_models = nhtsa_to_list(response, 'model')
     logging.debug(f'Process {os.getpid()}: extracted {len(list_models)} makes')
@@ -138,7 +128,7 @@ def get_combinations_by_year(year, combinations):
 def get_complaints(make, model, modelyear):
         logging.debug(f'Process {os.getpid()}: extracting {make}, {model}, {modelyear} complaints')
         # Define the URL for the NHTSA API endpoint that returns all information in complaints dataset for a specific vehicle
-        response = nhtsa_extract(f'https://api.nhtsa.gov/complaints/complaintsByVehicle?make={make}&model={model}&modelYear={modelyear}')
+        response = extractor.extract_response(f'https://api.nhtsa.gov/complaints/complaintsByVehicle?make={make}&model={model}&modelYear={modelyear}')
         # Clean info extracted to a df
         df_complaints = nhtsa_to_df(response)  
 
@@ -177,7 +167,7 @@ def parallel_get_combinations_by_year(list_years):
 # Function to get complaints in a paralalized way as a df
 def parallel_get_complaints(combinations):
     try:
-        logging.info('Extracting complaints according to combinations from NHTSA API...')
+        logging.info('Extracting Vehicle Complaints dataset according to combinations from NHTSA API...')
         # Define the number of processes to use
         num_processes = multiprocessing.cpu_count()
 
