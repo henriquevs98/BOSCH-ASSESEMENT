@@ -10,6 +10,7 @@ from io import StringIO
 
 from app import logger
 from app.libs import cleaner
+from app.data import stations_mapping, complaints_mapping
 
 # Load logging settings
 logger.logger()
@@ -269,9 +270,12 @@ def convert_columns_to_int(df, cols, int64=False):
 # Function to order a df set of columns based of a list of column name values
 def reorder_columns(df, col_order):
     try:
-        # Order df according to list given
-        df = df[col_order]
-        logging.debug(f'Reordered columns to {col_order}')
+        # Check if each column name in col_order exists in df
+        existing_cols = [col for col in col_order if col in df.columns]
+
+        # Order df according to list of existing columns
+        df = df[existing_cols]
+        logging.debug(f'Reordered columns to {existing_cols}')
 
         return df
 
@@ -289,3 +293,61 @@ def create_id_column(df):
 
     except Exception as e:
         logging.error(f'Error occurred using create_id_column(): {e}')
+
+
+# Function to split the dataframe into multiple dataframes based on a column values
+def divide_df(df, col):
+    try:
+        dfs_dict = {}
+        for value in df[col].unique():
+            dfs_dict[value] = df[df[col] == value]
+
+        return dfs_dict
+
+    except Exception as e:
+        logging.error(f'Error occurred using divide_df(): {e}')
+
+
+# Function to select a key from the dictionary and get all other values in a list
+def dict_inverted_value(dictionary, key):
+    try:
+        inverted_dict = {v: k for k, v in dictionary.items()}  # create an inverted dictionary
+        other_values = []
+        for k, v in inverted_dict.items():
+            if k != dictionary[key]:
+                other_values.append(k)
+
+        return other_values
+
+    except Exception as e:
+        logging.error(f'Error occurred using dict_inverted_value(): {e}')
+
+
+# Function to delete columns with prefixes in the list
+def remove_col_byprefix(df, prefixes_to_delete):
+    try:
+        print(prefixes_to_delete)
+        for prefix in prefixes_to_delete:
+            df = df.loc[:, ~df.columns.str.startswith(prefix)]
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using remove_col_byprefix(): {e}')
+
+
+# Function to apply divide_df, dict_inverted_key and remove_col_byprefix 
+# to get dfs divided with only its columns of interest
+def clean_divide_df(df):
+    try:
+        new_dict = {}
+        df_divided_dict = divide_df(df, 'fuel_type')
+
+        for fuelname, df in df_divided_dict.items():
+            list_other_fuels = dict_inverted_value(stations_mapping.fuel_code_map, fuelname)
+            new_dict[fuelname] = remove_col_byprefix(df, list_other_fuels)
+
+        return new_dict
+
+    except Exception as e:
+        logging.error(f'Error occurred using clean_divide_df(): {e}')
