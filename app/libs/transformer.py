@@ -1,12 +1,15 @@
 
 import os
+import re
 import json
 import logging
 import warnings
+import numpy as np
 import pandas as pd
 from io import StringIO
 
 from app import logger
+from app.libs import cleaner
 
 # Load logging settings
 logger.logger()
@@ -35,7 +38,7 @@ def nhtsa_to_list(response, column):
         return list_df
     
     except Exception as e:
-        logging.error(f'Process {os.getpid()}: Error occurred using nhtsa_to_list(): {e}')
+        logging.error(f'Process {os.getpid()}: error occurred using nhtsa_to_list(): {e}')
 
 
 # Function to transform all complaints data from NHSTA to a df
@@ -87,3 +90,57 @@ def csv_response_to_df(response):
 
     except Exception as e:
         logging.error(f'Error occurred using csv_response_to_df(): {e}')
+
+
+# Function to map column values based on key:values pair from dict
+def map_column_values(df, column, new_column, dict):
+    try:
+        # Add mapping for missing values
+        dict[np.nan] = 'Unknown'
+        # Map the values in the new_column column
+        df[new_column] = df[column].map(dict)
+        logging.debug(f'Mapped values from column {column} with: {dict}')
+        # Drop the column column after mapping to new new_column column
+        df = cleaner.rm_columns(df, [column])
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using map_fuel_type(): {e}')
+
+
+# Function to create an adress using {street_adress}, {city}, {state}, {zip}-{plus4}
+def stations_create_adress(df):
+    try:
+        # Construct full adress handling null cases
+        df['station_address'] = (df['street_address'].fillna('') +
+                                (', ' + df['city'] if not df['city'].isna().all() else '') +
+                                (', ' + df['state'] if not df['state'].isna().all() else '') +
+                                (', ' + df['zip'].fillna('').astype(str) if not df['zip'].isna().all() else '') +
+                                ('-' + df['plus4'].fillna('').astype(str) if not df['plus4'].isna().all() else '') +
+                                (', ' + df['country'] if not df['country'].isna().all() else ''))
+        logging.debug('Created station_adress column using columns street_adress, city, state, zip-plus4')
+        # Drop columns that were merged into the new adress column
+        df = cleaner.rm_columns(df, ['street_address', 'city', 'state', 'zip', 'plus4', 'country'])
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using create_adress(): {e}')
+
+
+# Function to create a POINT() function to format the lat(y) long(x) values as a point in GIS
+def stations_create_point(df):
+    try:
+        # Check and delete rows that lat or long null values
+        df = cleaner.stations_empty_point(df)
+        # Concatenate lat an long to a new column that is a GIS readable format
+        df['station_location'] = 'POINT(' + df['longitude'].round(5).astype(str) + ' ' + df['latitude'].round(5).astype(str) + ')'
+        logging.debug('Created station_location column by merging latitude and longitude column values to a POINT() function')
+        # Drop columns that were merged into the new adress column
+        df = cleaner.rm_columns(df, ['latitude', 'longitude'])
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using create_point(): {e}')
