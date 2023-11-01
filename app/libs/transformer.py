@@ -16,7 +16,7 @@ logger.logger()
 
 
 # Function to transform a column data returned from NHSTA to a list
-def nhtsa_to_list(response, column):
+def complaints_to_list(response, col):
     try:
         # Convert the byte string to a regular string
         json_str = response.content.decode('utf-8')
@@ -30,19 +30,19 @@ def nhtsa_to_list(response, column):
 
         if not df.empty:
             # Convert the specified column to a Python list
-            list_df = df[column].tolist()
-            logging.debug(f'Process {os.getpid()}: extracted {column} column values to list')
+            list_df = df[col].tolist()
+            logging.debug(f'Process {os.getpid()}: extracted {col} column values to list')
         else:
             list_df = []
         
         return list_df
     
     except Exception as e:
-        logging.error(f'Process {os.getpid()}: error occurred using nhtsa_to_list(): {e}')
+        logging.error(f'Process {os.getpid()}: error occurred using complaints_to_list(): {e}')
 
 
 # Function to transform all complaints data from NHSTA to a df
-def nhtsa_to_df(response):
+def complaints_to_df(response):
     try:
         # Convert the byte string to a regular string
         json_str = response.content.decode('utf-8')
@@ -69,7 +69,7 @@ def nhtsa_to_df(response):
         return df
 
     except Exception as e:
-        logging.error(f'Process {os.getpid()}: error occurred using nhtsa_to_df(): {e}')
+        logging.error(f'Process {os.getpid()}: error occurred using complaints_to_df(): {e}')
 
 
 # Function to transform a csv GET response to df
@@ -93,15 +93,15 @@ def csv_response_to_df(response):
 
 
 # Function to map column values based on key:values pair from dict
-def map_column_values(df, column, new_column, dict):
+def map_column_values(df, col, new_col, dict):
     try:
         # Add mapping for missing values
         dict[np.nan] = 'Unknown'
         # Map the values in the new_column column
-        df[new_column] = df[column].map(dict)
-        logging.debug(f'Mapped values from column {column} with: {dict}')
+        df[new_col] = df[col].map(dict)
+        logging.debug(f'Mapped values from column {col} with: {dict}')
         # Drop the column column after mapping to new new_column column
-        df = cleaner.rm_columns(df, [column])
+        df = cleaner.rm_columns(df, [col])
 
         return df
 
@@ -147,12 +147,145 @@ def stations_create_point(df):
 
 
 # Function to convert column from df to datetime type
-def convert_to_datetime(df, column_name):
+def convert_columns_to_datetime(df, cols):
     try:
-        df[column_name] = pd.to_datetime(df[column_name])
-        logging.debug(f'Converted {column_name} to datetime dtype')
+        # Iterate over cols provided
+        for col in cols:
+            # Convert column to datetime
+            df[col] = pd.to_datetime(df[col])
+            logging.debug(f'Converted {col} to datetime dtype')
 
         return df
 
     except Exception as e:
-        logging.error(f'Error occurred using create_point(): {e}')
+        logging.error(f'Error occurred using convert_to_datetime(): {e}')
+
+
+# Function that transforms the specified columns in the DataFrame to datetime formatand then converts them to the desired date format.
+def fix_date_columns(df, date_cols, date_format='%d/%m/%Y'):
+    try:
+        # Iterate over cols provided
+        for col in date_cols:
+            df[col] = pd.to_datetime(df[col], errors='coerce')
+            mask = df[col].notnull()
+            df.loc[mask, col] = df.loc[mask, col].dt.strftime(date_format)
+            logging.debug(f'Fixed {col} date order')
+        
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using fix_date_columns(): {e}')
+
+
+# Function to capitalize words in a string and keep words with / or starting with a number the same
+def capitalize_words_in_string(s):
+    try:
+        # split the string into words
+        words = s.split(' ')
+        capitalized_words = []
+
+        # Iterate the words
+        for word in words:
+            if '/' in word:
+                # if words have / keep them as is
+                capitalized_words.append(word.title())
+            elif word and word[0].isalpha():
+                # If word start with a letter, capitalize it
+                capitalized_words.append(word[0].upper() + word[1:].lower())
+            else:
+                # If none of the conditions were met keep the word as is
+                capitalized_words.append(word)
+
+        # Rearrange and return string
+        return ' '.join(capitalized_words)
+
+    except Exception as e:
+        logging.error(f'Error occurred using capitalize_words_in_string(): {e}')
+
+
+# Function to fix capitalization values of columns specified in a list
+def fix_capitalize_words(df, cols):
+    try:
+        # Iterate over cols provided
+        for col in cols:
+            # Correct capitalization
+            df[col] = df[col].apply(capitalize_words_in_string)
+            logging.debug(f'Fixed {col} words')
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using fix_capitalize_words(): {e}')
+
+
+# Function to create a year column based of a datetime column
+def create_year_column(df, col, new_col):
+    try:
+        # Create new_col with year values from col datetime
+        df[new_col] = pd.to_datetime(df[col]).dt.year
+        logging.debug(f'Created {new_col} column from {col} column')
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using create_year_column(): {e}')
+
+
+# Function to convert columns in a list to object type
+def convert_columns_to_string(df, cols):
+    try:
+        # Iterate over cols provided
+        for col in cols:
+            # Convert to str
+            df[col] = df[col].fillna('').astype(str)
+            logging.debug(f'Converted {col} to str dtype')
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using convert_columns_to_string(): {e}')
+
+
+# Function to convert columns in a list to int type
+def convert_columns_to_int(df, cols, int64=False):
+    try:
+        # Iterate over cols provided
+        for col in cols:
+            if int64:
+                # Convert to int
+                df[col] = pd.to_numeric(df[col], errors='coerce').astype('Int64')
+                logging.debug(f'Converted {col} to int64 dtype')
+            else:
+                # Convert to int
+                df[col] = pd.to_numeric(df[col], errors='coerce').astype('Int32')
+                logging.debug(f'Converted {col} to int32 dtype')
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using convert_columns_to_int(): {e}')
+
+
+# Function to order a df set of columns based of a list of column name values
+def reorder_columns(df, col_order):
+    try:
+        # Order df according to list given
+        df = df[col_order]
+        logging.debug(f'Reordered columns to {col_order}')
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using reorder_columns(): {e}')
+
+
+# Function to create an id column as the first column
+def create_id_column(df):
+    try:
+        df.insert(0, 'ID', df.index.astype(int))
+        logging.debug(f'Created ID column as unique ID')
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using create_id_column(): {e}')
