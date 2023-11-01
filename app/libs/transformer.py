@@ -144,3 +144,15 @@ def stations_create_point(df):
 
     except Exception as e:
         logging.error(f'Error occurred using create_point(): {e}')
+
+
+# Function to convert column from df to datetime type
+def convert_to_datetime(df, column_name):
+    try:
+        df[column_name] = pd.to_datetime(df[column_name])
+        logging.debug(f'Converted {column_name} to datetime dtype')
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using create_point(): {e}')

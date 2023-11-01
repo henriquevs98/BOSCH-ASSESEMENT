@@ -46,6 +46,8 @@ df_all_stations = transformer.stations_create_point(df_all_stations)
 df_all_stations = df_all_stations.dropna(subset=['station_name'])
 # Clean possible null values in str columns
 df_all_stations = cleaner.replace_null_values(df_all_stations, ['access_code', 'station_address'], 'Unknown')
+# Convert updated_at column to datetime dtype
+df_all_stations = transformer.convert_to_datetime(df_all_stations, 'updated_at')
 
 # Save the processed dataframe as a csv 
 loader.df_to_csv(df_all_stations, 'app/data/stations/processed/stations.csv')
