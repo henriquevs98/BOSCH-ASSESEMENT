@@ -9,7 +9,8 @@ deprecated_columns= ['federal_agency_id',
                      'lng_vehicle_class']
 
 # Trash columns to be deleted in main.py
-trash_columns = ['intersection_directions',
+trash_columns = ['id',
+                 'intersection_directions',
                  'station_phone',
                  'open_date',
                  'expected_date',
@@ -61,12 +62,12 @@ trash_columns = ['intersection_directions',
                  'ev_pricing_(french)',
                  'rd_blends_(french)']
 
-# Values to map stations status_code column
+# Values to map stations status_code column in main.py
 status_map = {'E': 'Available',
               'P': 'Planned',
               'T': 'Temporarily Unavailable'}
 
-# Values to map stations owner_type_code column
+# Values to map stations owner_type_code column in main.py
 owner_type_map = {'FG': 'Federal Government Owned',
                   'J': 'Jointly Owned',
                   'LG': 'Local/Municipal Government Owned',
@@ -74,7 +75,7 @@ owner_type_map = {'FG': 'Federal Government Owned',
                   'SG': 'State/Provincial Government Owned',
                   'T': 'Utility Owned'}
 
-# Values to map stations fuel_type_coded column
+# Values to map stations fuel_type_coded column in main.py
 fuel_type_map = {'BD': 'Biodiesel',
                  'CNG': 'Compressed Natural Gas',
                  'E85': 'Ethanol E85',
@@ -84,7 +85,7 @@ fuel_type_map = {'BD': 'Biodiesel',
                  'LPG': 'Liquefied Petroleum Gas',
                  'RD': 'Renewable Diesel'}
 
-# Values to map stations facility_type column
+# Values to map stations facility_type column in main.py
 facility_map = {'AIRPORT': 'Airport',
                 'ARENA': 'Arena',
                 'AUTO_REPAIR': 'Auto Repair Shop',
@@ -150,7 +151,26 @@ facility_map = {'AIRPORT': 'Airport',
                 'UTILITY': 'Utility',
                 'WORKPLACE': 'Workplace'}
 
-# Values to map stations maximum_vehicle_class column
+# Values to map stations maximum_vehicle_class column in main.py
 maximum_vehicle_map = {'LD': 'Light Duty Vehicle',
                        'MD': 'Medium Duty Vehicle',
                        'HD': 'Heavy Duty Vehicle'}
+
+# Columns to check for null values and replace with str Unknown in main.py
+replace_null_col_value = ['access_code', 
+                          'station_address']
+
+# Columns to be converted to datetime in main.py
+convert_to_datetime = ['updated_at']
+
+# Final column order to be apllied in main.py
+reorder_columns = ['station_name',
+                   'fuel_type',
+                   'station_address',
+                   'station_location',
+                   'facility',
+                   'owner_type',
+                   'maximum_class',
+                   'access_code',
+                   'status',
+                   'updated_at']
