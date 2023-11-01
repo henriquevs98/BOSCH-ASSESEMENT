@@ -34,13 +34,13 @@ def transformation_complaints():
     df_complaints = cleaner.rm_columns(df_complaints, complaints_mapping.trash_columns)
     # Fix dates
     df_complaints = transformer.fix_date_columns(df_complaints, complaints_mapping.fix_date)
-    # Fix word capitalization on 
+    # Fix word capitalization
     df_complaints = transformer.fix_capitalize_words(df_complaints, complaints_mapping.fix_capitalize)
     # Create a complaintYear column
     df_complaints = transformer.create_year_column(df_complaints, 'dateComplaintFiled',  'complaintYear')
     # Convert columns types to date
     df_complaints = transformer.convert_columns_to_datetime(df_complaints, complaints_mapping.convert_to_datetime)
-    #Convert columns types to int
+    # Convert columns types to int
     df_complaints = transformer.convert_columns_to_int(df_complaints, complaints_mapping.convert_to_int)
     # Reorder columns in df
     df_complaints = transformer.reorder_columns(df_complaints, )
@@ -86,5 +86,13 @@ def transformation_stations():
     # Create a column with a unique ID in  the first column index
     df_stations = transformer.create_id_column(df_stations)
 
+    dict_dfs_stations = transformer.clean_divide_df(df_stations)
+    loader.dict_dfs_to_csv(dict_dfs_stations, 'app/data/stations/processed/')
+
     # Save the processed dataframe as a csv 
     loader.df_to_csv(df_stations, 'app/data/stations/processed/stations.csv')
+
+    return dict_dfs_stations
+
+
+dict = transformation_stations()
