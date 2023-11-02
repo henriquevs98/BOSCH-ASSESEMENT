@@ -2,7 +2,7 @@ import logging
 import pandas as pd
 from google.cloud import bigquery
 
-from app import logger
+from utils import logger
 
 # Load logging settings
 logger.logger()

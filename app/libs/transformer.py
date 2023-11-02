@@ -8,9 +8,9 @@ import numpy as np
 import pandas as pd
 from io import StringIO
 
-from app import logger
-from app.libs import cleaner
-from app.data import stations_mapping, complaints_mapping
+from utils import logger
+from libs import cleaner
+from data import stations_mapping
 
 # Load logging settings
 logger.logger()

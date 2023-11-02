@@ -1,6 +1,6 @@
 import logging
 
-from app import logger
+from utils import logger
 
 # Load logging settings
 logger.logger()

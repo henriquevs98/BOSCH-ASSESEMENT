@@ -4,8 +4,8 @@ import logging
 import pandas as pd
 import multiprocessing
 
-from app import logger
-from app.libs import transformer
+from utils import logger
+from libs import transformer
 
 # Load logging settings
 logger.logger()

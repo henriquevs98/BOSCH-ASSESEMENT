@@ -2,7 +2,7 @@ import logging
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-from app import logger
+from utils import logger
 
 # Load logging settings
 logger.logger()
