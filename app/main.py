@@ -1,32 +1,22 @@
-from app import logger
+from app import logger, database
 from app.libs import loader, cleaner, transformer, extractor
 from app.data import stations_mapping, complaints_mapping
 
 # Load logging settings
 logger.logger()
 
-def extraction_complaints():
+# BigQuery engine connection vars
+bq_credentials, bq_client = database.SessionBigQuery()
+
+
+def complaints_extraction():
     # Get Vehicle Complaints Information dataset as a pandas df
     df_all_complaints = extractor.get_all_complaints()
-    # Save the dataframe as a csv 
+    # Save the dataframe as a csv
     loader.df_to_csv(df_all_complaints, 'app/data/complaints/extracted/complaints.csv')
 
 
-def extraction_stations():
-    # Get Alternative Fuel Stations dataset as a pandas df
-    df_stations = extractor.get_stations()
-    # Save the extracted dataframe as a csv 
-    loader.df_to_csv(df_stations, 'app/data/stations/extracted/stations.csv')
-
-
-def extraction_fuel():
-    # Get Vehicle Fuel Economy Information dataset as a pandas df
-    df_all_fuel = extractor.get_fuel()
-    # Save the dataframe as a csv 
-    loader.df_to_csv(df_all_fuel, 'app/data/fuel/extracted/fuel.csv')
-
-
-def transformation_complaints():
+def complaints_transformation():
     # Read the extracted csv
     df_complaints = loader.csv_to_df('app/data/complaints/extracted/complaints.csv')
 
@@ -47,11 +37,25 @@ def transformation_complaints():
     # Create a column with a unique ID in  the first column index
     df_complaints = transformer.create_id_column(df_complaints)
 
-    # Save the processed dataframe as a csv 
+    # Save the processed dataframe as a csv
     loader.df_to_csv(df_complaints, 'app/data/complaints/processed/complaints.csv')
 
+    return df_complaints
 
-def transformation_stations():
+
+def complaints_loading():
+    df_complaints = complaints_transformation()
+    loader.df_to_gcp(df_complaints, 'alternative_fuel_stations', bq_client)
+
+
+def stations_extraction():
+    # Get Alternative Fuel Stations dataset as a pandas df
+    df_stations = extractor.get_stations()
+    # Save the extracted dataframe as a csv
+    loader.df_to_csv(df_stations, 'app/data/stations/extracted/stations.csv')
+
+
+def stations_transformation():
     # Read the extracted csv
     df_stations = loader.csv_to_df('app/data/stations/extracted/stations.csv')
 
@@ -85,14 +89,96 @@ def transformation_stations():
     df_stations = transformer.reorder_columns(df_stations, stations_mapping.reorder_columns)
     # Create a column with a unique ID in  the first column index
     df_stations = transformer.create_id_column(df_stations)
-
+    # Split table into multiple tables according to fuel type as a dictionary of fuelname: df
     dict_dfs_stations = transformer.clean_divide_df(df_stations)
-    loader.dict_dfs_to_csv(dict_dfs_stations, 'app/data/stations/processed/')
 
-    # Save the processed dataframe as a csv 
-    loader.df_to_csv(df_stations, 'app/data/stations/processed/stations.csv')
+    # Extract Compressed Natural Gas specific df from dict
+    df_stations_cng = dict_dfs_stations['Compressed Natural Gas']
+    # Convert columns to int32 dtype
+    df_stations_cng = transformer.convert_columns_to_int(df_stations_cng, stations_mapping.convert_to_int_cng)
+    # Map cng_fill_type_code values according to documentation to new cng_fill_type column and drop column used
+    df_stations_cng = transformer.map_column_values(df_stations_cng, 'cng_fill_type_code', 'cng_fill_type', stations_mapping.cng_fill_map)
+    # Map cng_on-site_renewable_source values according to documentation to new cng_renewable_source column and drop column used
+    df_stations_cng = transformer.map_column_values(df_stations_cng, 'cng_on-site_renewable_source', 'cng_renewable_source', stations_mapping.cng_renewable_map)
+    # Clean possible null values in str columns
+    df_stations_cng = cleaner.replace_null_values(df_stations_cng, ['cng_renewable_source'], 'Unknown')
+    # Reorder columns in df
+    df_stations_cng = transformer.reorder_columns(df_stations_cng, stations_mapping.reorder_columns_cng)
+    # Reassign the correct df to dictionary
+    dict_dfs_stations['Compressed Natural Gas'] = df_stations_cng
+
+    # Extract Ethanol E85 specific df from dict
+    df_stations_e85 = dict_dfs_stations['Ethanol E85']
+    # Remove quotes from column values
+    df_stations_e85 = cleaner.quote_remover(df_stations_e85, ['e85_other_ethanol_blends'])
+    # Reassign the correct df to dictionary
+    dict_dfs_stations['Ethanol E85'] = df_stations_e85
+
+    # Extract Electric specific df from dict
+    df_stations_ev = dict_dfs_stations['Electric']
+    # Convert columns to int32 dtype
+    df_stations_ev = transformer.convert_columns_to_int(df_stations_ev, ['ev_level1_evse_num', 'ev_level2_evse_num', 'ev_dc_fast_count'])
+    # Map ev_on-site_renewable_source values according to documentation to new ev_renewable_source column and drop column used
+    df_stations_ev = transformer.map_column_values(df_stations_ev, 'ev_on-site_renewable_source', 'ev_renewable_source', stations_mapping.cng_renewable_map)
+    # Clean possible null values in str columns
+    df_stations_ev = cleaner.replace_null_values(df_stations_ev, ['ev_renewable_source', 'ev_connector_types'], 'Unknown')
+    # Create a string of list values for a list of columns
+    df_stations_ev = transformer.parantheses_col(df_stations_ev, ['ev_connector_types'])
+    # Reorder columns in df
+    df_stations_ev = transformer.reorder_columns(df_stations_ev, stations_mapping.reorder_columns_ev)
+    dict_dfs_stations['Electric'] = df_stations_ev
+
+    # Extract Hydrogen specific df from dict
+    df_stations_hydrogen = dict_dfs_stations['Hydrogen']
+    # Remove quotes from column values
+    df_stations_hydrogen = cleaner.quote_remover(df_stations_hydrogen, ['hydrogen_pressures', 'hydrogen_standards'])
+    # Reassign the correct df to dictionary
+    dict_dfs_stations['Hydrogen'] = df_stations_hydrogen
+
+    # Extract Liquefied Natural Gas specific df from dict
+    df_stations_lng = dict_dfs_stations['Liquefied Natural Gas']
+    # Map lng_on-site_renewable_source values according to documentation to new cng_renewable_source column and drop column used
+    df_stations_lng = transformer.map_column_values(df_stations_lng, 'lng_on-site_renewable_source', 'lng_renewable_source', stations_mapping.cng_renewable_map)
+    # Clean possible null values in str columns
+    df_stations_lng = cleaner.replace_null_values(df_stations_lng, ['lng_renewable_source'], 'Unknown')
+    # Reorder columns in df
+    df_stations_lng = transformer.reorder_columns(df_stations_lng, stations_mapping.reorder_columns_lng)
+    # Reassign the correct df to dictionary
+    dict_dfs_stations['Liquefied Natural Gas'] = df_stations_lng
+
+    # Extract Liquefied Petroleum Gas specific df from dict
+    df_stations_lpg = dict_dfs_stations['Liquefied Petroleum Gas']
+    # Remove quotes from column values
+    df_stations_lpg = cleaner.quote_remover(df_stations_lpg, ['lpg_nozzle_types'])
+    # Reassign the correct df to dictionary
+    dict_dfs_stations['Liquefied Petroleum Gas'] = df_stations_lpg
+
+    # Extract Renewable Diesel specific df from dict
+    df_stations_rd = dict_dfs_stations['Renewable Diesel']
+    df_stations_rd = transformer.convert_columns_to_int(df_stations_rd, ['rd_maximum_biodiesel_level'])
+    # Map cng_fill_type_code values according to documentation to new cng_fill_type column and drop column used
+    df_stations_rd = transformer.map_column_values(df_stations_rd, 'rd_blended_with_biodiesel', 'rd_blended_biodiesel', stations_mapping.rd_blended_map)
+    # Reorder columns in df
+    df_stations_rd = transformer.reorder_columns(df_stations_rd, stations_mapping.reorder_columns_rd)
+    # Remove comma from values
+    df_stations_rd['rd_blends'] = df_stations_rd['rd_blends'].str.replace(',', '')
+    # Create a string of list values for a list of columns
+    df_stations_rd = transformer.parantheses_col(df_stations_rd, ['rd_blends'])
+    # Reassign the correct df to dictionary
+    dict_dfs_stations['Renewable Diesel'] = df_stations_rd
+
+    loader.dict_dfs_to_csv(dict_dfs_stations, 'app/data/stations/processed/')
 
     return dict_dfs_stations
 
 
-dict = transformation_stations()
+def stations_loading():
+    dict_dfs_stations = stations_transformation()
+    loader.dict_df_to_gcp(dict_dfs_stations, 'alternative_fuel_stations', bq_client)
+
+
+def fuel_extraction():
+    # Get Vehicle Fuel Economy Information dataset as a pandas df
+    df_all_fuel = extractor.get_fuel()
+    # Save the dataframe as a csv
+    loader.df_to_csv(df_all_fuel, 'app/data/fuel/extracted/fuel.csv')
