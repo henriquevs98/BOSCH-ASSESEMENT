@@ -110,9 +110,57 @@ def map_column_values(df, col, new_col, dict):
         logging.error(f'Error occurred using map_fuel_type(): {e}')
 
 
+# Function to capitalize words in a string and keep words with / or starting with a number the same
+def capitalize_words_in_string(s):
+    try:
+        if isinstance(s, str):
+            # Split the string into words
+            words = s.split(' ')
+            capitalized_words = []
+
+            # Iterate the words
+            for word in words:
+                if '/' in word or '-' in word:
+                    # if words have / or -, keep them as is
+                    capitalized_words.append(word.title())
+                elif word and word[0].isalpha():
+                    # If word starts with a letter, capitalize it
+                    capitalized_words.append(word[0].upper() + word[1:].lower())
+                else:
+                    # If none of the conditions were met, keep the word as is
+                    capitalized_words.append(word)
+
+            # Rearrange and return string
+            return ' '.join(capitalized_words)
+
+        else:
+            # If the input is not a string, convert it to a string and try again
+            return capitalize_words_in_string(str(s))
+
+    except Exception as e:
+        logging.error(f'Error occurred using capitalize_words_in_string(): {e}')
+
+
+# Function to fix capitalization values of columns specified in a list
+def fix_capitalize_words(df, cols):
+    try:
+        # Iterate over cols provided
+        for col in cols:
+            # Correct capitalization
+            df[col] = df[col].apply(capitalize_words_in_string)
+            logging.debug(f'Fixed {col} words capitalization')
+
+        return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using fix_capitalize_words(): {e}')
+
+
 # Function to create an adress using {street_adress}, {city}, {state}, {zip}-{plus4}
 def stations_create_adress(df):
     try:
+        # Fix word capitalization in columns before creating clean adress
+        df = fix_capitalize_words(df, ['street_address', 'city'])
         # Construct full adress handling null cases
         df['station_address'] = (df['street_address'].fillna('') +
                                 (', ' + df['city'] if not df['city'].isna().all() else '') +
@@ -176,47 +224,6 @@ def fix_date_columns(df, date_cols, date_format='%d/%m/%Y'):
 
     except Exception as e:
         logging.error(f'Error occurred using fix_date_columns(): {e}')
-
-
-# Function to capitalize words in a string and keep words with / or starting with a number the same
-def capitalize_words_in_string(s):
-    try:
-        # split the string into words
-        words = s.split(' ')
-        capitalized_words = []
-
-        # Iterate the words
-        for word in words:
-            if '/' in word:
-                # if words have / keep them as is
-                capitalized_words.append(word.title())
-            elif word and word[0].isalpha():
-                # If word start with a letter, capitalize it
-                capitalized_words.append(word[0].upper() + word[1:].lower())
-            else:
-                # If none of the conditions were met keep the word as is
-                capitalized_words.append(word)
-
-        # Rearrange and return string
-        return ' '.join(capitalized_words)
-
-    except Exception as e:
-        logging.error(f'Error occurred using capitalize_words_in_string(): {e}')
-
-
-# Function to fix capitalization values of columns specified in a list
-def fix_capitalize_words(df, cols):
-    try:
-        # Iterate over cols provided
-        for col in cols:
-            # Correct capitalization
-            df[col] = df[col].apply(capitalize_words_in_string)
-            logging.debug(f'Fixed {col} words')
-
-        return df
-
-    except Exception as e:
-        logging.error(f'Error occurred using fix_capitalize_words(): {e}')
 
 
 # Function to create a year column based of a datetime column
@@ -283,7 +290,7 @@ def reorder_columns(df, col_order):
         logging.error(f'Error occurred using reorder_columns(): {e}')
 
 
-# Function to create an id column as the first column
+# Function to create an id column as the first column based of index
 def create_id_column(df):
     try:
         df.insert(0, 'ID', df.index.astype(int))
@@ -299,8 +306,11 @@ def create_id_column(df):
 def divide_df(df, col):
     try:
         dfs_dict = {}
+
         for value in df[col].unique():
             dfs_dict[value] = df[df[col] == value]
+
+        logging.debug(f'Divided df into multiple dfs according to value in column {col}')
 
         return dfs_dict
 
@@ -313,9 +323,14 @@ def dict_inverted_value(dictionary, key):
     try:
         inverted_dict = {v: k for k, v in dictionary.items()}  # create an inverted dictionary
         other_values = []
+
+        # Iterate over the inverted dictionary and append all values that are not from the 
+        # specified key to a list
         for k, v in inverted_dict.items():
             if k != dictionary[key]:
                 other_values.append(k)
+
+        logging.debug(f'Returned all values that are not from {key}: {other_values}')
 
         return other_values
 
@@ -326,9 +341,11 @@ def dict_inverted_value(dictionary, key):
 # Function to delete columns with prefixes in the list
 def remove_col_byprefix(df, prefixes_to_delete):
     try:
-        print(prefixes_to_delete)
         for prefix in prefixes_to_delete:
             df = df.loc[:, ~df.columns.str.startswith(prefix)]
+
+        logging.debug(f'Deleted columns by prefixes: {prefixes_to_delete}')
+
 
         return df
 
@@ -347,7 +364,28 @@ def clean_divide_df(df):
             list_other_fuels = dict_inverted_value(stations_mapping.fuel_code_map, fuelname)
             new_dict[fuelname] = remove_col_byprefix(df, list_other_fuels)
 
+        logging.debug(f'Divided df into multiple')
+
+
         return new_dict
 
     except Exception as e:
         logging.error(f'Error occurred using clean_divide_df(): {e}')
+
+
+# Function to turn a col value like str1 str2 str3 into [str1, str2, st3]
+def parantheses_col(df, cols):
+    try:
+        for col in cols:
+            # Split values in specified column by spaces, sort them alphabetically, and re-join with commas
+            df[col] = df[col].apply(lambda x: ', '.join(sorted(x.split())) if x != 'Unknown' else x)
+            # Add square brackets to the values in the specified column
+            df[col] = df[col].apply(lambda x: f"[{x}]" if x != 'Unknown' else x)
+
+            logging.debug(f'Separated values with , and added [] for column {col}')
+
+
+            return df
+
+    except Exception as e:
+        logging.error(f'Error occurred using parantheses_col(): {e}')

@@ -5,6 +5,7 @@ from app import logger
 # Load logging settings
 logger.logger()
 
+
 # Function to convert column names to lowercase and replace blank spaces with underscores
 def fix_columns(df):
     try:
@@ -33,8 +34,8 @@ def rm_columns(df, list_columns):
 def stations_empty_point(df):
     try:
         if df['latitude'].isnull().any() or df['longitude'].isnull().any():
-            logging.debug('The latitude or longitude column contains null values, dropped corresponding rows')
             df = df.dropna(subset=['latitude', 'longitude'])
+            logging.debug('The latitude or longitude column contains null values, dropped corresponding rows')
         else:
             logging.debug("No null values where found in latitude or longitude columns")
 
@@ -44,6 +45,7 @@ def stations_empty_point(df):
         logging.error(f'Error occurred when using empty_point(): {e}')
 
 
+# Function to replace null values in a list of specified columns
 def replace_null_values(df, columns, value):
     try:
         for column in columns:
@@ -54,3 +56,16 @@ def replace_null_values(df, columns, value):
     
     except Exception as e:
         logging.error(f'Error occurred when using replace_null_values(): {e}')
+
+
+# Function to remove quotes and replace null values with unknown
+def quote_remover(df, cols):
+    try:
+        for col in cols:
+            df[col] = (df[col].
+                    apply(lambda x: x.replace('"', '') if isinstance(x, str) else 'Unknown'))
+        
+        return df
+    
+    except Exception as e:
+        logging.error(f'Error occurred when using quote_remover(): {e}')

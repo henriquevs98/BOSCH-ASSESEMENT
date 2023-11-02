@@ -23,12 +23,32 @@ trash_columns = ['id',
                  'access_detail_code',
                  'restricted_access',
                  'nps_unit_name',
+                 'bd_blends',
+                 'hydrogen_status_link',
+                 'ev_pricing',
+                 'ev_other_info',
                  'intersection_directions_(french)',
                  'access_days_time_(french)',
                  'bd_blends_(french)',
                  'groups_with_access_code_(french)',
                  'ev_pricing_(french)',
                  'rd_blends_(french)']
+
+# Columns to check for null values and replace with str Unknown in main.py
+replace_null_col_value = ['access_code', 
+                          'station_address']
+
+# Columns to be converted to datetime in main.py
+convert_to_datetime = ['updated_at']
+
+# Column to convert to int in main.py
+convert_to_int_cng = ['cng_total_compression_capacity',
+                      'cng_storage_capacity',
+                      'cng_dispenser_num',
+                      'cng_psi']
+
+# Column to convert to int in main.py
+convert_to_int_rd = ['rd_maximum_biodiesel_level']
 
 # Values to map stations status_code column in main.py
 status_map = {'E': 'Available',
@@ -124,12 +144,35 @@ maximum_vehicle_map = {'LD': 'Light Duty Vehicle',
                        'MD': 'Medium Duty Vehicle',
                        'HD': 'Heavy Duty Vehicle'}
 
-# Columns to check for null values and replace with str Unknown in main.py
-replace_null_col_value = ['access_code', 
-                          'station_address']
+# Values to map stations fuel_type_coded column in main.py
+fuel_code_map = {'Biodiesel': 'bd',
+                 'Compressed Natural Gas': 'cng',
+                 'Ethanol E85': 'e85',
+                 'Electric': 'ev',
+                 'Hydrogen': 'hydrogen',
+                 'Liquefied Natural Gas': 'lng',
+                 'Liquefied Petroleum Gas': 'lpg',
+                 'Renewable Diesel': 'rd'}
 
-# Columns to be converted to datetime in main.py
-convert_to_datetime = ['updated_at']
+# Values to map cng_fill_type_code column in main.py
+cng_fill_map =  {'All': 'All',
+                 'B': 'Fast-fill and time-fill',
+                 'Q': 'Fast-fill',
+                 'T': 'Time-fill'}
+
+# Values to map cng_renewable_source column in main.py
+cng_renewable_map = {'GEOTHERMAL': 'Geothermal',
+                     'HYDRO': 'Hydropower',
+                     'LANDFILL': 'Landfill',
+                     'LIVESTOCK': 'Livestock Operations',
+                     'NONE': 'None',
+                     'SOLAR': 'Solar',
+                     'WASTEWATER': 'Wastewater Treatment',
+                     'WIND': 'Wind'}
+
+# Values to map stations rd_blended_with_biodiesel column in main.py
+rd_blended_map = {'Y': 'False',
+                  'N': 'True'}
 
 # Final column order to be apllied in main.py
 reorder_columns = ['station_name',
@@ -175,12 +218,68 @@ reorder_columns = ['station_name',
                    'status',
                    'updated_at']
 
-# Values to map stations fuel_type_coded column in main.py
-fuel_code_map = {'Biodiesel': 'bd',
-                 'Compressed Natural Gas': 'cng',
-                 'Ethanol E85': 'e85',
-                 'Electric': 'ev',
-                 'Hydrogen': 'hydrogen',
-                 'Liquefied Natural Gas': 'lng',
-                 'Liquefied Petroleum Gas': 'lpg',
-                 'Renewable Diesel': 'rd'}
+# List to order final cng df columns in main.py
+reorder_columns_cng = ['ID',
+                       'station_name',
+                       'fuel_type',
+                       'station_address',
+                       'station_location',
+                       'facility',
+                       'owner_type',
+                       'maximum_class', 
+                       'access_code',
+                       'cng_total_compression_capacity', 
+                       'cng_storage_capacity', 
+                       'cng_dispenser_num',
+                       'cng_psi',
+                       'cng_station_sells_renewable_natural_gas',
+                       'cng_fill_type',
+                       'cng_renewable_source',
+                       'updated_at']
+
+reorder_columns_ev = ['ID',
+                      'station_name',
+                      'fuel_type',
+                      'station_address',
+                      'station_location',
+                      'facility',
+                      'owner_type',
+                      'maximum_class',
+                      'access_code',
+                      'ev_level1_evse_num',
+                      'ev_level2_evse_num',
+                      'ev_dc_fast_count',
+                      'ev_network',
+                      'ev_connector_types',
+                      'ev_workplace_charging',
+                      'ev_renewable_source',
+                      'updated_at']
+
+# List to order final lng df columns in main.py
+reorder_columns_lng = ['ID',
+                       'station_name',
+                       'fuel_type',
+                       'station_address',
+                       'station_location',
+                       'facility',
+                       'owner_type',
+                       'maximum_class',
+                       'access_code',
+                       'lng_station_sells_renewable_natural_gas',
+                       'lng_renewable_source',
+                       'updated_at']
+
+# List to order final rd df columns in main.py
+reorder_columns_rd = ['ID',
+                      'station_name',
+                      'fuel_type',
+                      'station_address',
+                      'station_location',
+                      'facility',
+                      'owner_type',
+                      'maximum_class',
+                      'access_code',
+                      'rd_blends',
+                      'rd_maximum_biodiesel_level',
+                      'rd_blended_biodiesel',
+                      'updated_at',]
