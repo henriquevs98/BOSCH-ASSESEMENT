@@ -1,4 +1,6 @@
-pandas==2.0
-google-cloud-bigquery==3.11.4
-google-cloud-storage==2.10.0
-google-auth==2.22.0
+pandas
+google-cloud-bigquery
+google-cloud-storage
+google-auth
+fastapi
+uvicorn
