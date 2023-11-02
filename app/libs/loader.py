@@ -14,7 +14,7 @@ def df_to_csv(df, dir):
         logging.info(f'Saved {df.shape[0]} lines on csv file at {dir}')
 
     except Exception as e:
-        logging.error(f'An error occurred when using df_to_csv(): {e}')
+        logging.error(f'Error occurred using df_to_csv(): {e}')
 
 
 # Function to read a csv as a df
@@ -27,7 +27,7 @@ def csv_to_df(dir):
         return df
 
     except Exception as e:
-        logging.error(f'An error occurred when using csv_to_df(): {e}')
+        logging.error(f'Error occurred using csv_to_df(): {e}')
 
 
 # Function to save a dictionary of dataframes to csv files
@@ -45,4 +45,4 @@ def dict_dfs_to_csv(dfs_dict, dir):
             df_to_csv(df, csvpath)
 
     except Exception as e:
-        logging.error(f'An error occurred when using dict_dfs_to_csv(): {e}')
+        logging.error(f'Error occurred using dict_dfs_to_csv(): {e}')

@@ -15,7 +15,7 @@ def fix_columns(df):
         return df
 
     except Exception as e:
-        logging.error(f'An error occurred when using fix_columns(): {e}')
+        logging.error(f'Error occurred using fix_columns(): {e}')
 
 
 # Function to remove columns specified in a list
@@ -27,7 +27,7 @@ def rm_columns(df, list_columns):
         return df
 
     except Exception as e:
-        logging.error(f'Error occurred when using rm_columns(): {e}')
+        logging.error(f'Error occurred using rm_columns(): {e}')
 
 
 # Function that checks if lat or long are null, if so it drops corresponding lines
@@ -42,7 +42,7 @@ def stations_empty_point(df):
         return df
 
     except Exception as e:
-        logging.error(f'Error occurred when using empty_point(): {e}')
+        logging.error(f'Error occurred using empty_point(): {e}')
 
 
 # Function to replace null values in a list of specified columns
@@ -55,7 +55,7 @@ def replace_null_values(df, columns, value):
         return df
     
     except Exception as e:
-        logging.error(f'Error occurred when using replace_null_values(): {e}')
+        logging.error(f'Error occurred using replace_null_values(): {e}')
 
 
 # Function to remove quotes and replace null values with unknown
@@ -68,4 +68,4 @@ def quote_remover(df, cols):
         return df
     
     except Exception as e:
-        logging.error(f'Error occurred when using quote_remover(): {e}')
+        logging.error(f'Error occurred using quote_remover(): {e}')

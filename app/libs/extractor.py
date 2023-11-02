@@ -20,7 +20,7 @@ def extract_response(url):
         return response
 
     except Exception as e:
-        logging.error(f'Process {os.getpid()}: An error occurred when using extract_response(): {e}')
+        logging.error(f'Process {os.getpid()}: error occurred using extract_response(): {e}')
 
 
 # Function to get Fuel Stations dataset using National Renewable Energy Laboratory API
@@ -37,7 +37,7 @@ def get_stations():
         return df_stations
 
     except Exception as e:
-        logging.error(f'An error occurred when using get_stations(): {e}')
+        logging.error(f'Error occurred using get_stations(): {e}')
 
 
 # Function to get the Vehicle Fuel Economy Information dataset from a URL
@@ -54,7 +54,7 @@ def get_fuel():
         return df_fuel
 
     except Exception as e:
-        logging.error(f'An error occurred when using nhtsa_extract(): {e}')
+        logging.error(f'Error occurred using get_fuel(): {e}')
 
 
 # Function to get all Model Years as a list
