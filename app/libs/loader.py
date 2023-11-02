@@ -1,10 +1,12 @@
 import logging
 import pandas as pd
+from google.cloud import bigquery
 
 from app import logger
 
 # Load logging settings
 logger.logger()
+
 
 # Function to save a df to a csv file
 def df_to_csv(df, dir):
@@ -46,3 +48,37 @@ def dict_dfs_to_csv(dfs_dict, dir):
 
     except Exception as e:
         logging.error(f'Error occurred using dict_dfs_to_csv(): {e}')
+
+
+# Function to send df to Google BigQuery
+def df_to_gcp(df, tablename, bq_schema, bq_client, insertion='truncate'):
+    try:
+        if insertion == 'truncate':  # check if the files in database are from this execution to append new info. If not, replace them
+            job_config = bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE")
+            logging.debug(f'Dropping {tablename} old table in BigQuery {bq_schema}')
+            logging.debug(f'Creating new {tablename} table in BigQuery {bq_schema}')
+            job = bq_client.load_table_from_dataframe(df, f'{bq_schema}.{tablename}', job_config=job_config)  
+            job.result()  
+            logging.info(f'Sent {len(df.index)} rows to BigQuery as {tablename}')
+        else:
+            job_config = bigquery.LoadJobConfig(write_disposition="WRITE_APPEND")
+            job = bq_client.load_table_from_dataframe(df, f'{bq_schema}.{tablename}', job_config=job_config)  
+            job.result()  
+            logging.info(f'Sent {len(df.index)} rows to BigQuery as {tablename}')
+
+    except Exception as e:
+        logging.error(f'Error occurred using df_to_gcp(): {e}')
+
+
+# Function to send a dict of dfs to Google BigQuery
+def dict_df_to_gcp(dict , bq_schema, bq_client, insertion='append'):
+    
+    for info, df in dict.items():
+        try:
+            name = info.lower().replace(' ',  '_')
+            # Create a unique name that explicits the fuel type
+            tablename = f'stations_{name}.csv'
+            df_to_gcp(df, tablename, bq_schema, bq_client, insertion)
+
+        except Exception as e:
+            logging.error('Error occurred when using dict_df_to_gcp: {e}')
