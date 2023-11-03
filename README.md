@@ -52,15 +52,15 @@ The endpoints and functionality of the FastAPI application that has been develop
 
 To access the FastAPI documentation, simply navigate to the /docs endpoint of the running FastAPI application in a web browser. For example, if the FastAPI application is running on http://localhost:8000, you can access the documentation by navigating to http://localhost:8000/docs.
 
-1. Open a web browser and navigate to `http://localhost/docs`. This will take you to the FastAPI docs page.
+1. After deploying the container, launch the FastAPI app by running the command `uvicorn main:app --reload` in the `app/` dir where the `main.py` file is located.
+2. Open a web browser and navigate to `http://localhost/docs`. This will take you to the FastAPI docs page.
 
-2. The FastAPI docs provide an interactive interface for testing the endpoints of the app. This interface can be used  to send requests to the app and see the responses in real-time.
+3. The FastAPI docs provide an interactive interface for testing the endpoints of the app. This interface can be used  to send requests to the app and see the responses in real-time.
 
-3. To test an endpoint, expand the endpoint in the sidebar and click on the "Try it out" button.
+4. To test an endpoint, expand the endpoint in the sidebar and click on the "Try it out" button.
 
-4. Once the parameters are entered, the "Execute" button can be clicked to send the request. The response will be displayed below the form.
+5. Once the parameters are entered, the "Execute" button can be clicked to send the request to execute the endpoint defined function. The response will be displayed below the form.
 
-5. FastAPI docs can be used to explore the endpoints of the app and test their functionality. This can be a useful tool for debugging and developing.
 
 ## File tree
 This initial chapter will provide a more detailed explanation of the purpose of each folder in the file tree. Each dataset required for the project has a subfolder in the data folder, and next chapters chapter will focus on explaining the data extraction, data transformation, and data loading processes for each dataset.
@@ -182,7 +182,7 @@ In the extraction process for this dataset, a function called `extractor.get_fue
 
 Unfortunately, due to professional constraints, the [U.S. Environmental Protection Agency Vehicle Fuel Economy Information](https://www.fueleconomy.gov/feg/download.shtml/) dataset was not transformed as expected. However, I made the best effort to document the extraction function and the overall data pipeline process for this dataset.
 
-If there had been more time, the data transformation process would have likely followed a similar approach to that of the U.S. Department of Energy Alternative Fuel Stations dataset. The transformation process would have involved importing the necessary functions from the libs folder to clean, manipulate, and convert the data.
+If there had been more time, the data transformation process would have likely followed a similar approach to that of the [U.S. Department of Energy Alternative Fuel Stations](https://afdc.energy.gov/data_download). The transformation process would have involved importing the necessary functions from the libs folder to clean, manipulate, and convert the data.
 
 I hope that the incomplete transformation of this dataset does not significantly impact my evaluation, as I made the best effort to leave everything documented and to provide a clear understanding of the data pipeline process for all the other two datasets.
 
@@ -225,8 +225,6 @@ The ETL app built with FastAPI and Docker can be automated to run on a schedule 
 
 ## Proposal
 
-Here's a proposal for automating the ETL app:
-
 1. Set up a Docker Swarm cluster with one or more worker nodes. The worker nodes should have enough resources to run the ETL app containers.
 
 2. Build a Docker image for the ETL app using the Dockerfile.
@@ -236,10 +234,8 @@ Here's a proposal for automating the ETL app:
 4. Create a crontab file on the host machine that runs the Docker Swarm cluster. The crontab file should include a command to trigger the ETL app at the desired schedule interval. For example, if the ETL app is to run every day at 12:00 PM, the following line can be added to the crontab file:
 
 ```
-0 12 * * * docker service update --force <service_name>
+0 12 * * * curl http://localhost:8000/your-endpoint
 ```
-
-Replace `<service_name>` with the name of the Docker service created in step 3.
 
 5. Save the crontab file and exit the editor. The crontab file will be automatically loaded by the crontab daemon.
 
@@ -247,11 +243,11 @@ Replace `<service_name>` with the name of the Docker service created in step 3.
 
 
 ### Automation interval
-A good approach to regularly extract, transform, and update the Vehicle Complaints, Fuel Stations, and Vehicle Fuel Economy Information datasets in BigQuery is to regularly compare the datasets in the cloud with the ones extracted and transformed by the script. Here are the steps to implement this approach:
+A good approach to regularly extract, transform, and update the Vehicle Complaints, Fuel Stations, and Vehicle Fuel Economy Information datasets in BigQuery is to regularly compare the datasets in the cloud with the ones extracted and transformed by the script:
 
-1. Create a script that extracts the datasets from their respective sources and transforms them into a format suitable for loading into BigQuery. The script should be able to run on a schedule using a tool such as crontab, therefore using FastAPI might be a good aproach since it creates urls that can be curled.
+1. The script should be able to run on a schedule using a tool such as crontab, therefore using FastAPI might be a good aproach since it creates urls that can be curled.
 
-2. For each dataset, download the latest version of the dataset from the source and compare it to the version currently stored in BigQuery.
+2. For each dataset, download the latest version of the dataset from the source, process it and compare it to the version currently stored in BigQuery.
 
 3. If the row count is different, use the `df_to_gcp()` function to replace the contents of the corresponding BigQuery table with the newly extracted and transformed dataframe.
 
@@ -263,8 +259,6 @@ This approach ensures that the data in BigQuery is regularly updated with the la
 
 
 ### Benefits of Docker Swarm
-
-Using Docker Swarm to manage the ETL app containers provides several benefits:
 
 - Scalability: Docker Swarm allows to easily scale the ETL app to handle larger datasets or higher traffic.
 - High availability: Docker Swarm ensures that the ETL app is always available by automatically restarting failed containers and rebalancing the workload across the cluster.
