@@ -14,14 +14,14 @@ def complaints_extraction():
     # Get Vehicle Complaints Information dataset as a pandas df
     df_all_complaints = extractor.get_all_complaints()
     # Save the dataframe as a csv
-    loader.df_to_csv(df_all_complaints, 'app/data/complaints/extracted/complaints.csv')
+    loader.df_to_csv(df_all_complaints, 'data/complaints/extracted/complaints.csv')
 
     return df_all_complaints
 
 
 def complaints_transformation():
     # Read the extracted csv
-    df_complaints = loader.csv_to_df('app/data/complaints/extracted/complaints.csv')
+    df_complaints = loader.csv_to_df('data/complaints/extracted/complaints.csv')
 
     # Remove columns that arent too revelant
     df_complaints = cleaner.rm_columns(df_complaints, complaints_mapping.trash_columns)
@@ -41,7 +41,7 @@ def complaints_transformation():
     df_complaints = transformer.create_id_column(df_complaints)
 
     # Save the processed dataframe as a csv
-    loader.df_to_csv(df_complaints, 'app/data/complaints/processed/complaints.csv')
+    loader.df_to_csv(df_complaints, 'data/complaints/processed/complaints.csv')
 
     return df_complaints
 
@@ -54,14 +54,14 @@ def stations_extraction():
     # Get Alternative Fuel Stations dataset as a pandas df
     df_stations = extractor.get_stations()
     # Save the extracted dataframe as a csv
-    loader.df_to_csv(df_stations, 'app/data/stations/extracted/stations.csv')
+    loader.df_to_csv(df_stations, 'data/stations/extracted/stations.csv')
 
     return df_stations
 
 
 def stations_transformation():
     # Read the extracted csv
-    df_stations = loader.csv_to_df('app/data/stations/extracted/stations.csv')
+    df_stations = loader.csv_to_df('data/stations/extracted/stations.csv')
 
     # Separate column names with _ and lowercase
     df_stations = cleaner.fix_columns(df_stations)
@@ -171,7 +171,7 @@ def stations_transformation():
     # Reassign the correct df to dictionary
     dict_dfs_stations['Renewable Diesel'] = df_stations_rd
 
-    loader.dict_dfs_to_csv(dict_dfs_stations, 'app/data/stations/processed/')
+    loader.dict_dfs_to_csv(dict_dfs_stations, 'data/stations/processed/')
 
     return dict_dfs_stations
 
@@ -184,13 +184,9 @@ def fuel_extraction():
     # Get Vehicle Fuel Economy Information dataset as a pandas df
     df_all_fuel = extractor.get_fuel()
     # Save the dataframe as a csv
-    loader.df_to_csv(df_all_fuel, 'app/data/fuel/extracted/fuel.csv')
+    loader.df_to_csv(df_all_fuel, 'data/fuel/extracted/fuel.csv')
 
     return df_all_fuel
-
-
-def fuel_loading(dict_dfs_stations):
-    loader.dict_df_to_gcp(dict_dfs_stations, 'alternative_fuel_stations', bq_client)
 
 
 def fuel_loading(df_fuel):
