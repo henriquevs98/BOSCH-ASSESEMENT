@@ -27,8 +27,8 @@ def transform_vehicle_complaints_dataset():
 # Endpoint to load data related to complaints
 @app.get('/loading/complaints', tags=['Loading'], description=CONFIG['complaints_loading']['description'])
 def load_vehicle_complaints_transformed_dataset():
-    complaints_transformation()
-    complaints_loading()
+    df = complaints_transformation()
+    complaints_loading(df)
 
     return {'message': 'Completed complaints dataset loading to Google BigQuery'}
 
@@ -52,8 +52,8 @@ def transform_alternative_fuel_stations_dataset():
 # Endpoint to load data related to stations
 @app.get('/loading/stations', tags=['Loading'], description=CONFIG['stations_loading']['description'])
 def load_alternative_fuel_stations__transformed_datasets():
-    stations_transformation()
-    stations_loading()
+    df_dict = stations_transformation()
+    stations_loading(df_dict)
 
     return {'message': 'Completed stations dataset loading to Google BigQuery'}
 
@@ -69,7 +69,7 @@ def extract_vehicle_fuel_info_dataset():
 # Endpoint to load data related to fuel
 @app.get('/loading/fuel', tags=['Loading'], description=CONFIG['fuel__loading']['description'])
 def load_alternative_fuel_stations__transformed_datasets():
-    stations_transformation()
+    df = fuel_extraction()
     fuel_loading()
 
     return {'message': 'Completed stations dataset loading to Google BigQuery'}

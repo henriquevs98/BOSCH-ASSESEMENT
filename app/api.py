@@ -191,3 +191,7 @@ def fuel_extraction():
 
 def fuel_loading(dict_dfs_stations):
     loader.dict_df_to_gcp(dict_dfs_stations, 'alternative_fuel_stations', bq_client)
+
+
+def fuel_loading(df_fuel):
+    loader.df_to_gcp(df_fuel, 'fuel','fuel_economy', bq_client)
