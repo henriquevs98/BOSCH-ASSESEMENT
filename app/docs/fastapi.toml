@@ -19,7 +19,7 @@ manipulate the data.
 [complaints_extraction]
 description = """
 # Description
-This endpoint extracts all complaints from (NHTSA API)[https://www.nhtsa.gov/nhtsa-datasets-and-apis] related to Vehicle Complaints.
+This endpoint extracts all complaints from [NHTSA API](https://www.nhtsa.gov/nhtsa-datasets-and-apis) related to Vehicle Complaints.
 Returns number of rows extracted.
 """
 
@@ -27,7 +27,7 @@ Returns number of rows extracted.
 [complaints_transformation]
 description = """
 # Description
-This endpoint transforms the dataset extracted from (NHTSA API)[https://www.nhtsa.gov/nhtsa-datasets-and-apis] related to Vehicle Complaints.
+This endpoint transforms the dataset extracted from [NHTSA API](https://www.nhtsa.gov/nhtsa-datasets-and-apis) related to Vehicle Complaints.
 Returns the dataset transformed.
 """
 
@@ -35,7 +35,7 @@ Returns the dataset transformed.
 [complaints_loading]
 description = """
 # Description
-This endpoint extracts, transforms and loads the dataset from [NHTSA API][https://www.nhtsa.gov/nhtsa-datasets-and-apis] related to Vehicle Complaints.
+This endpoint extracts, transforms and loads the dataset from [NHTSA API](https://www.nhtsa.gov/nhtsa-datasets-and-apis) related to Vehicle Complaints.
 Returns number of rows sent to Google BigQuery.
 """
 
@@ -51,7 +51,7 @@ Returns number of rows extracted.
 [stations_transformation]
 description = """
 # Description
-This endpoint transforms the dataset extracted from [NREL API](https://developer.nrel.gov/docs/transportation/)  related to Alternative Fuel Stations.
+This endpoint transforms the dataset extracted from [NREL API](https://developer.nrel.gov/docs/transportation/) related to Alternative Fuel Stations.
 Returns the dataset transformed.
 """
 
@@ -59,7 +59,7 @@ Returns the dataset transformed.
 [stations_loading]
 description = """
 # Description
-This endpoint extracts, transforms and loads the dataset from [NREL API](https://developer.nrel.gov/docs/transportation/)   related to Alternative Fuel Stations.
+This endpoint extracts, transforms and loads the dataset from [NREL API](https://developer.nrel.gov/docs/transportation/) related to Alternative Fuel Stations.
 Returns number of rows sent to Google BigQuery.
 """
 
@@ -67,7 +67,7 @@ Returns number of rows sent to Google BigQuery.
 [fuel__extraction]
 description = """
 # Description
-This endpoint transforms the dataset extracted from (AFDC website)[https://afdc.energy.gov/data_download] related to Vehicle Fuel Economy Information.
+This endpoint transforms the dataset extracted from [AFDC website](https://afdc.energy.gov/data_download) related to Vehicle Fuel Economy Information.
 Returns number of rows extracted.
 """
 
@@ -75,6 +75,6 @@ Returns number of rows extracted.
 [fuel__loading]
 description = """
 # Description
-This endpoint extracts, transforms and loads the dataset extracted and transformed from [AFDC website][https://www.nhtsa.gov/nhtsa-datasets-and-apis] related to Vehicle Fuel Economy Information.
+This endpoint extracts and loads the dataset extracted from [AFDC website](https://afdc.energy.gov/data_download) related to Vehicle Fuel Economy Information.
 Returns number of rows sent to Google BigQuery.
 """
