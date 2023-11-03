@@ -72,4 +72,4 @@ def load_alternative_fuel_stations__transformed_datasets():
     df = fuel_extraction()
     fuel_loading()
 
-    return {'message': 'Completed stations dataset loading to Google BigQuery'}
+    return {'message': 'Completed fuel dataset loading to Google BigQuery'}
