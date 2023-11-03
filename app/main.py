@@ -1,11 +1,17 @@
 import toml
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from api import complaints_extraction, complaints_transformation, complaints_loading, stations_extraction, stations_transformation, stations_loading, fuel_extraction, fuel_loading
-
+import json
 
 CONFIG = toml.load('docs/fastapi.toml')
 
 app = FastAPI(title='Bosch Assesment', description=CONFIG['endpoints']['description'])
+
+
+def parse_csv(df):
+    res = df.to_json(orient="records")
+    parsed = json.loads(res)
+    return parsed
 
 
 # Endpoint to extract data related to complaints
@@ -18,10 +24,16 @@ def extract_vehicle_complaints_dataset():
 
 # Endpoint to transform data related to complaints
 @app.get('/transformation/complaints', tags=['Transformation'], description=CONFIG['complaints_transformation']['description'])
-def transform_vehicle_complaints_dataset():
-    complaints_transformation()
+def transform_vehicle_complaints_dataset(include_data: bool = Query(False, description=CONFIG['complaints_transformation']['description_query'])):
+    df = complaints_transformation()
+    
+    if include_data:
 
-    return {'message': 'Completed complaints dataset transformation'}
+        return parse_csv(df)
+    
+    else:
+
+        return {'message': 'Completed complaints dataset transformation'}
 
 
 # Endpoint to load data related to complaints
@@ -43,16 +55,22 @@ def extract_alternative_fuel_stations_dataset():
 
 # Endpoint to transform data related to stations
 @app.get('/transformation/stations', tags=['Transformation'], description=CONFIG['stations_transformation']['description'])
-def transform_alternative_fuel_stations_dataset():
-    stations_transformation()
+def transform_alternative_fuel_stations_dataset(include_data: bool = Query(False, description=CONFIG['stations_transformation']['description_query'])):
+    df = stations_transformation()[1]
 
-    return {'message': 'Completed stations dataset transformation'}
+    if include_data:
+
+        return parse_csv(df)
+    
+    else:
+
+        return {'message': 'Completed stations dataset transformation'}
 
 
 # Endpoint to load data related to stations
 @app.get('/loading/stations', tags=['Loading'], description=CONFIG['stations_loading']['description'])
 def load_alternative_fuel_stations__transformed_datasets():
-    df_dict = stations_transformation()
+    df_dict = stations_transformation()[0]
     stations_loading(df_dict)
 
     return {'message': 'Completed stations dataset loading to Google BigQuery'}
