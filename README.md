@@ -113,7 +113,7 @@ The `extractor.get_all_complaints()` extractor.function uses the `extractor.get_
 
 ![image](https://github.com/henriquevs98/BOSCH-ASSESEMENT/assets/110188794/d8ebfe05-aab5-4d72-a3c5-534145572ff9)
 
-This endpoint can be accessed by making a GET request to the '/extraction/complaints' route. The function `api.complaints_extraction` groups all the necessary functions from `libs` into a single function to be passed on the endpoint, making it more comprehensible and easier to use.
+This endpoint can be accessed by making a GET request to the `/extraction/complaints` route. The function `api.complaints_extraction` groups all the necessary functions from `libs` into a single function to be passed on the endpoint, making it more comprehensible and easier to use.
 
 ### Data Transformation
 The function `api.complaints_transformation()` is a data transformation pipeline that processes a CSV file containing complaints data. The function performs several data cleaning, manipulation, and conversion tasks on the input data to produce a processed CSV file. To simplify the code and make it more readable, various values utilized in the transformation process have been stored in `data.complaints_mapping`.
@@ -156,7 +156,7 @@ The extraction process involved defining the URL for the [NREL API](https://deve
 
 ![image](https://github.com/henriquevs98/BOSCH-ASSESEMENT/assets/110188794/67cf0c3f-febc-48e6-87ba-264510a7681f)
 
-In main.py, the `api.stations_extraction()` function is imported and serves as an endpoint for the FastAPI application. This endpoint can be accessed by making a GET request to the '/extraction/stations' route. The function groups all the necessary functions from `libs` into a single endpoint, making it more comprehensible and easier to use.
+In main.py, the `api.stations_extraction()` function is imported and serves as an endpoint for the FastAPI application. This endpoint can be accessed by making a GET request to the `/extraction/stations` route. The function groups all the necessary functions from `libs` into a single endpoint, making it more comprehensible and easier to use.
 
 ### Data Transformation
 The `api.stations_transformation()` function is a data transformation pipeline that processes a CSV file containing information about fueling stations. The function performs several cleaning, manipulation, and conversion tasks on the input data to produce a dictionary of processed dataframes, each corresponding to a specific fuel type. To simplify the code and make it more readable, various values utilized in the transformation process have been stored in `data.stations_mapping`. 
