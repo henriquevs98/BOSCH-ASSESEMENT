@@ -1,4 +1,4 @@
-from database import SessionBigQuery
+# from database import SessionBigQuery
 from utils import logger
 from libs import loader, cleaner, transformer, extractor
 from data import stations_mapping, complaints_mapping
@@ -36,7 +36,7 @@ def complaints_transformation():
     # Convert columns types to int
     df_complaints = transformer.convert_columns_to_int(df_complaints, complaints_mapping.convert_to_int)
     # Reorder columns in df
-    df_complaints = transformer.reorder_columns(df_complaints, )
+    df_complaints = transformer.reorder_columns(df_complaints, complaints_mapping.reorder_columns)
     # Create a column with a unique ID in  the first column index
     df_complaints = transformer.create_id_column(df_complaints)
 
@@ -186,4 +186,8 @@ def fuel_extraction():
     # Save the dataframe as a csv
     loader.df_to_csv(df_all_fuel, 'app/data/fuel/extracted/fuel.csv')
 
-    return fuel_extraction
+    return df_all_fuel
+
+
+def fuel_loading(dict_dfs_stations):
+    loader.dict_df_to_gcp(dict_dfs_stations, 'alternative_fuel_stations', bq_client)
