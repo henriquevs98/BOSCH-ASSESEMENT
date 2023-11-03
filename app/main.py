@@ -68,7 +68,7 @@ def extract_vehicle_fuel_info_dataset():
 
 # Endpoint to load data related to fuel
 @app.get('/loading/fuel', tags=['Loading'], description=CONFIG['fuel__loading']['description'])
-def load_vehicle_fuel_info_transformed_dataset():
+def load_vehicle_fuel_info_dataset():
     df = fuel_extraction()
     fuel_loading(df)
 
