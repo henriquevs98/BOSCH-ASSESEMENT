@@ -173,7 +173,7 @@ def stations_transformation():
 
     loader.dict_dfs_to_csv(dict_dfs_stations, 'data/stations/processed/')
 
-    return dict_dfs_stations
+    return dict_dfs_stations, df_stations
 
 
 def stations_loading(dict_dfs_stations):
