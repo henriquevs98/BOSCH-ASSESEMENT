@@ -68,8 +68,8 @@ def extract_vehicle_fuel_info_dataset():
 
 # Endpoint to load data related to fuel
 @app.get('/loading/fuel', tags=['Loading'], description=CONFIG['fuel__loading']['description'])
-def load_alternative_fuel_stations__transformed_datasets():
+def load_vehicle_fuel_info_transformed_dataset():
     df = fuel_extraction()
-    fuel_loading()
+    fuel_loading(df)
 
     return {'message': 'Completed fuel dataset loading to Google BigQuery'}
