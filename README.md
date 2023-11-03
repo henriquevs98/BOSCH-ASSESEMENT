@@ -46,7 +46,8 @@ Overall, this documentation aims to provide a comprehensive guide to the FastAPI
    This command should display a list of all running Docker containers, including the one running your FastAPI app.
 
 ## Accessing the FastAPI Docs
-The endpoints and functionality of the FastAPI application that has been developed can be easily explored and understood through the FastAPI documentation. The documentation provides detailed information about each endpoint, including the expected input parameters, output data, and possible errors.
+The endpoints and functionality of the FastAPI application that has been developed can be easily explored and understood through the FastAPI documentation. The documentation provides detailed information about each endpoint, including the expected output data, and where the data comes from.
+![image](https://github.com/henriquevs98/BOSCH-ASSESEMENT/assets/110188794/3fda8345-41ad-401e-9624-60eaf4a3c913)
 
 To access the FastAPI documentation, simply navigate to the /docs endpoint of the running FastAPI application in a web browser. For example, if the FastAPI application is running on http://localhost:8000, you can access the documentation by navigating to http://localhost:8000/docs.
 
