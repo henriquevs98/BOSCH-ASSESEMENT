@@ -60,8 +60,8 @@ To access the FastAPI documentation, simply navigate to the /docs endpoint of th
 4. To test an endpoint, expand the endpoint in the sidebar and click on the "Try it out" button.
 
 5. Once the parameters are entered, the "Execute" button can be clicked to send the request to execute the endpoint defined function. The response will be displayed below the form.
-6. 
-7. When executed, the logs of the app can be seen in the console:
+
+6. When executed, the logs of the app can be seen in the console:
 ![image](https://github.com/henriquevs98/BOSCH-ASSESEMENT/assets/110188794/a6c8cf62-4b23-46b2-9a41-b3931411503c)
 
 
