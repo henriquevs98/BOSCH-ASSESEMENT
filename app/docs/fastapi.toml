@@ -1,0 +1,80 @@
+[endpoints]
+description = """
+# Description
+As part of a job assessment, I created a data pipeline to acquire, process, and load data from
+various public sources related to the automotive industry. To achieve this, I chose to develop a
+FastAPI application in Python. FastAPI is a modern, fast (high-performance), web framework for
+building APIs. It was chosen for its simplicity, scalability, and efficiency in handling large
+data sets. In this document, I will explain the pipeline, what it does, and how to use it. I will
+also document the decisions made during the data processing and transformation steps, explain the
+data loading process and the strategy for automation.
+The application consists of several endpoints that provide the necessary
+functionality to acquire and process the data, transform it into a format suitable for further
+analysis, and load it into a hypothetical data storage system (Google BigQuery). The endpoints were
+developed to handle the different sources of data and provide a clear and concise way to access and
+manipulate the data.
+"""
+
+
+[complaints_extraction]
+description = """
+# Description
+This endpoint extracts all complaints from (NHTSA API)[https://www.nhtsa.gov/nhtsa-datasets-and-apis] related to Vehicle Complaints.
+Returns number of rows extracted.
+"""
+
+
+[complaints_transformation]
+description = """
+# Description
+This endpoint transforms the dataset extracted from (NHTSA API)[https://www.nhtsa.gov/nhtsa-datasets-and-apis] related to Vehicle Complaints.
+Returns the dataset transformed.
+"""
+
+
+[complaints_loading]
+description = """
+# Description
+This endpoint extracts, transforms and loads the dataset from [NHTSA API][https://www.nhtsa.gov/nhtsa-datasets-and-apis] related to Vehicle Complaints.
+Returns number of rows sent to Google BigQuery.
+"""
+
+
+[stations_extraction]
+description = """
+# Description
+This endpoint extracts all complaints from [NREL API](https://developer.nrel.gov/docs/transportation/) related to Alternative Fuel Stations.
+Returns number of rows extracted.
+"""
+
+
+[stations_transformation]
+description = """
+# Description
+This endpoint transforms the dataset extracted from [NREL API](https://developer.nrel.gov/docs/transportation/)  related to Alternative Fuel Stations.
+Returns the dataset transformed.
+"""
+
+
+[stations_loading]
+description = """
+# Description
+This endpoint extracts, transforms and loads the dataset from [NREL API](https://developer.nrel.gov/docs/transportation/)   related to Alternative Fuel Stations.
+Returns number of rows sent to Google BigQuery.
+"""
+
+
+[fuel__extraction]
+description = """
+# Description
+This endpoint transforms the dataset extracted from (AFDC website)[https://afdc.energy.gov/data_download] related to Vehicle Fuel Economy Information.
+Returns number of rows extracted.
+"""
+
+
+[fuel__loading]
+description = """
+# Description
+This endpoint extracts, transforms and loads the dataset extracted and transformed from [AFDC website][https://www.nhtsa.gov/nhtsa-datasets-and-apis] related to Vehicle Fuel Economy Information.
+Returns number of rows sent to Google BigQuery.
+"""
