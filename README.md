@@ -111,10 +111,21 @@ The `extractor.parallel_get_complaints(combinations)` function uses the `extract
 
 The `extractor.get_all_complaints()` extractor.function uses the `extractor.get_years()`, `extractor.parallel_get_combinations_by_year()`, and `extractor.parallel_get_complaints()` functions to extract all complaints for all available model years, makes, and models in parallel. This is done by first retrieving a list of all available model years using `extractor.get_years()`, then using `extractor.parallel_get_combinations_by_year()` to create a list of all possible combinations of make, model, and model year, and finally using `extractor.parallel_get_complaints()` to extract all complaints for each combination in parallel. The resulting DataFrame containing all complaints is then returned and saved as a csv in `data/complaints/extracted`.
 
+![image](https://github.com/henriquevs98/BOSCH-ASSESEMENT/assets/110188794/d8ebfe05-aab5-4d72-a3c5-534145572ff9)
+
+This endpoint can be accessed by making a GET request to the '/extraction/complaints' route. The function `api.complaints_extraction` groups all the necessary functions from `libs` into a single function to be passed on the endpoint, making it more comprehensible and easier to use.
+
 ### Data Transformation
 The function `api.complaints_transformation()` is a data transformation pipeline that processes a CSV file containing complaints data. The function performs several data cleaning, manipulation, and conversion tasks on the input data to produce a processed CSV file. To simplify the code and make it more readable, various values utilized in the transformation process have been stored in `data.complaints_mapping`.
 
-In main.py, the `api.complaints_transformation()` function is imported and serves as an endpoint for the FastAPI application. This endpoint can be accessed by making a GET request to the `/complaints/transformation` route. The function groups all the necessary functions from `libs` into a single endpoint, making it more comprehensible and easier to use.
+In main.py, the `api.complaints_transformation()` function is imported and serves as an endpoint for the FastAPI application. This endpoint can be accessed by making a GET request to the `/transformation/complaints` route. The function groups all the necessary functions from `libs` into a single endpoint, making it more comprehensible and easier to use. 
+
+![image](https://github.com/henriquevs98/BOSCH-ASSESEMENT/assets/110188794/2e728f2e-5241-4b4d-a213-c21b2ea898be)
+
+The transformation endpoint is equipped with a query parameter that provides the option to return a JSON response with transformed data. You can use the following URLs to include or exclude data from the response:
+
+- `http://localhost:8000/transformation/complaints?include_data=true` - Includes transformed data in the response.
+- `http://localhost:8000/transformation/complaints?include_data=false` - Excludes transformed data from the response.
 
 Here are the steps performed in the `api.complaints_transformation()` function:
 
@@ -143,12 +154,22 @@ The Alternative Fuel Stations dataset provides valuable information on the locat
 ### Data Extraction
 The extraction process involved defining the URL for the [NREL API](https://developer.nrel.gov/docs/transportation/) endpoint that returns the full dataset and setting the API key to access the service. Once the response was received, the data was extracted using the `extract_response()` function, and transformed into a pandas DataFrame using the `transformer.csv_response_to_df()` function. The resulting DataFrame contained information about the alternative fuel stations, including their names, locations, fuel types and is also saved as a csv in 'data/stations/extracted/'. 
 
-In main.py, the `api.stations_extraction()` function is imported and serves as an endpoint for the FastAPI application. This endpoint can be accessed by making a GET request to the '/stations/extraction' route. The function groups all the necessary functions from `libs` into a single endpoint, making it more comprehensible and easier to use.
+![image](https://github.com/henriquevs98/BOSCH-ASSESEMENT/assets/110188794/67cf0c3f-febc-48e6-87ba-264510a7681f)
+
+In main.py, the `api.stations_extraction()` function is imported and serves as an endpoint for the FastAPI application. This endpoint can be accessed by making a GET request to the '/extraction/stations' route. The function groups all the necessary functions from `libs` into a single endpoint, making it more comprehensible and easier to use.
 
 ### Data Transformation
 The `api.stations_transformation()` function is a data transformation pipeline that processes a CSV file containing information about fueling stations. The function performs several cleaning, manipulation, and conversion tasks on the input data to produce a dictionary of processed dataframes, each corresponding to a specific fuel type. To simplify the code and make it more readable, various values utilized in the transformation process have been stored in `data.stations_mapping`. 
 
-In main.py, the `api.stations_transformation()` function is imported and serves as an endpoint for the FastAPI application. This endpoint can be accessed by making a GET request to the `/stations/transformation` route. The function groups all the necessary functions from `libs` into a single endpoint, making it more comprehensible and easier to use.
+In main.py, the `api.stations_transformation()` function is imported and serves as an endpoint for the FastAPI application. This endpoint can be accessed by making a GET request to the `/transformation/stations` route. The function groups all the necessary functions from `libs` into a single endpoint, making it more comprehensible and easier to use.
+
+![image](https://github.com/henriquevs98/BOSCH-ASSESEMENT/assets/110188794/42b267b5-f92e-4001-91e9-a5ec41ef478e)
+
+
+The transformation endpoint is equipped with a query parameter that provides the option to return a JSON response with transformed data. You can use the following URLs to include or exclude data from the response:
+
+- `http://localhost:8000/transformation/stations?include_data=true` - Includes transformed data in the response.
+- `http://localhost:8000/transformation/stations?include_data=false` - Excludes transformed data from the response.
 
 Here are the steps performed in the `stations_transformation()` function:
 
@@ -181,6 +202,11 @@ The [U.S. Environmental Protection Agency Vehicle Fuel Economy Information](http
 
 ### Data Extraction
 In the extraction process for this dataset, a function called `extractor.get_fuel()` is used to download the data from the  [U.S. Environmental Protection Agency](https://www.fueleconomy.gov/feg/download.shtml/) website. The function uses the `extract_response()` function from the `extractor` library to get the response from the URL. The response (a unzziped csv file) is then passed to the `csv_response_to_df()` function from the `transformer` library to convert the CSV data into a Pandas dataframe. The resulting dataframe contains information on over 40,000 vehicles and their fuel economy and environmental impact and is saved under `data/fuel/extracted`.
+
+![image](https://github.com/henriquevs98/BOSCH-ASSESEMENT/assets/110188794/98493396-19f9-4192-a09e-925c74704f20)
+
+
+The `main.py` file contains an endpoint for the FastAPI application, which can be accessed by sending a GET request to the `/extraction/fuel` route. 
 
 ### Data Transformation
 
