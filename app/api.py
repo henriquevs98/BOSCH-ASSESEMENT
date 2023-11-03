@@ -1,4 +1,5 @@
 # from database import SessionBigQuery
+import pandas as pd
 from utils import logger
 from libs import loader, cleaner, transformer, extractor
 from data import stations_mapping, complaints_mapping
@@ -96,6 +97,11 @@ def stations_transformation():
     # Split table into multiple tables according to fuel type as a dictionary of fuelname: df
     dict_dfs_stations = transformer.clean_divide_df(df_stations)
 
+    # Extract Biodiesel specific df from dict
+    df_stations_bd = dict_dfs_stations['Biodiesel']
+    # Reassign the correct df to dictionary
+    dict_dfs_stations['Biodiesel'] = df_stations_bd
+
     # Extract Compressed Natural Gas specific df from dict
     df_stations_cng = dict_dfs_stations['Compressed Natural Gas']
     # Convert columns to int32 dtype
@@ -173,7 +179,12 @@ def stations_transformation():
 
     loader.dict_dfs_to_csv(dict_dfs_stations, 'data/stations/processed/')
 
-    return dict_dfs_stations, df_stations
+    # Merge all vertically in order to get a full cleaned dataset
+    merged_df = pd.concat([df_stations_rd, df_stations_lpg, df_stations_lng, 
+                           df_stations_hydrogen, df_stations_ev, df_stations_e85, 
+                           df_stations_cng, df_stations_bd], axis=0, join='outer', ignore_index=True)
+
+    return dict_dfs_stations, merged_df
 
 
 def stations_loading(dict_dfs_stations):
